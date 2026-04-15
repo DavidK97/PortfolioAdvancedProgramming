@@ -11,11 +11,15 @@ public class Main {
 
         // Opgave 1: O(1) eksempel:
         int result = add(n);
-        System.out.println(result);
+        System.out.println("O(1) eksempel sum: " + result);
 
         // Opgave 1: O(n) eksempel:
         int result2 = add2(n);
-        System.out.println(result2);
+        System.out.println("O(n) eksempel sum: " + result2);
+
+        // Opgave 1: O log(n) eksempel:
+        int result3 = multiply(100);
+        System.out.println("log(n) eksempel sum: " + result3);
 
 
         // Opgave 2: ArrayList vs LinkedList:
@@ -40,12 +44,23 @@ public class Main {
             sum += i;
             count++;
         }
-        System.out.println("Antal operationer: " + count);
+        System.out.println("Antal operationer O(n): " + count);
         return sum;
     }
 
     // O(log n) Logaritmisk tid
+    public static int multiply (int n) {
+        int count = 0;
+        int sum = 0;
 
+        for (int i = 1; i < n; i *= 2) {
+            sum += i;
+            count++;
+            System.out.println("Sum for hver operation O(log n): " + sum);
+        }
+        System.out.println("Antal operationer O(log n): " + count);
+        return sum;
+    }
 
     // Opgave 2
     // ArrayList vs LinkedList
@@ -63,33 +78,43 @@ public class Main {
         int middle = arrayList.get(n/2);
         long stop = System.currentTimeMillis();
         System.out.println("Tid for hentning af element: ArrayList O(1): " + (stop - start) + " ms");
+        // Elementet findes ved 1 operation da vi har en direkte reference til placering i hukommelsen via indexet
 
         start = System.currentTimeMillis();
         int middle2 = linkedList.get(n/2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for hentning af element: LinkedList O(n): " + (stop - start) + " ms");
+        // Elementerne i listen kender kun til deres naboer og vi skal derfor igennem hvert element indtil vi når midten
 
         // Indsæt element midt i listen
         start = System.currentTimeMillis();
         arrayList.add(n/2, 99);
         stop = System.currentTimeMillis();
-        System.out.println("Tid for indsætning af element: ArrayList O(1) og O(n): " + (stop - start) + " ms");
+        System.out.println("Tid for indsætning af element: ArrayList O(n): " + (stop - start) + " ms");
+        // For at finde midten er det O(1) konstant tid, men når vi indsætter så skal alt efter midten
+        // rykkes en plads til højre, så hvert element får en ny indexplacering
 
         start = System.currentTimeMillis();
         linkedList.add(n/2, 99);
         stop = System.currentTimeMillis();
-        System.out.println("Tid for indsætning af element: LinkeList O(n) og O(1): " + (stop - start) + " ms");
+        System.out.println("Tid for indsætning af element: LinkeList O(n): " + (stop - start) + " ms");
+        // For at finde midten så skal vi igennem alle elementer indtil vi når midten, som sker i lineær tid O(n),
+        // Men når vi så indsætter noget i midten, så er det i konstant tid O(1)
 
         // Slet element midt i listen
         start = System.currentTimeMillis();
         arrayList.remove(n/2);
         stop = System.currentTimeMillis();
-        System.out.println("Tid for sletning af element: ArrayList O(1) og O(n): " + (stop - start) + " ms");
+        System.out.println("Tid for sletning af element: ArrayList O(n): " + (stop - start) + " ms");
+        // Konstant tid O(1) for at finde midten
+        // Lineær tid O(n) for at rykke alle elementer én plads mod venstre for at ændre indexplacering
 
         start = System.currentTimeMillis();
         linkedList.remove(n/2);
         stop = System.currentTimeMillis();
-        System.out.println("Tid for sletning af element: LinkedList O(n) og O(1): " + (stop - start) + " ms");
+        System.out.println("Tid for sletning af element: LinkedList O(n): " + (stop - start) + " ms");
+        // Lineær tid O(n) for at finde midten
+        // Konstant tid for at lave nye referencer til naboelementerne for at "lappe" hullet
     }
 
     // Opgave 2: Søgning i List vs Hashset
@@ -104,24 +129,28 @@ public class Main {
 
         // Søgning på element der findes:
         long start = System.currentTimeMillis();
-        boolean result = arrayList.contains(n/2);
+        boolean result = arrayList.contains(n / 2);
         long stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der findes: Arraylist O(n): " + (stop - start) + " ms");
+        // Lineær tid O(n) da vi skal loope hvert element igennem for at se om det indeholder den søgte værdi
 
         start = System.currentTimeMillis();
-        boolean result2 = hashSet.contains(n/2);
+        boolean result2 = hashSet.contains(n / 2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der findes: HashSet O(1): " + (stop - start) + " ms");
+        // Konstant tid O(1), da vi hasher værdien og via hash koden finder adressen i hukommelsen og ser om elementer er der
 
         // Søgning på element der ikke findes:
         start = System.currentTimeMillis();
         boolean result3 = arrayList.contains(n + 1);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der IKKE findes: Arraylist O(n): " + (stop - start) + " ms");
+        // Lineær tid O(n), vi looper igennem hele listen for at se om elementet er deri
 
         start = System.currentTimeMillis();
         boolean result4 = hashSet.contains(n + 1);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der IKKE findes: HashSet O(1): " + (stop - start) + " ms");
+        // Konstant tid O(1), vi hasher værdien, kigger og ser at der ikke findes noget i hukommelsen
     }
 }
