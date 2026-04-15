@@ -1,6 +1,7 @@
 package complexity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class Main {
@@ -18,7 +19,10 @@ public class Main {
 
 
         // Opgave 2: ArrayList vs LinkedList:
-        opgave2(500000);
+        arrayListVSLinkedList(500000);
+
+        // Opgave 2: ArrayList vs Hashset:
+        arrayListVSHashSet(500000);
     }
 
     // Opgave 1
@@ -45,7 +49,7 @@ public class Main {
 
     // Opgave 2
     // ArrayList vs LinkedList
-    public static void opgave2 (int n) {
+    public static void arrayListVSLinkedList (int n) {
         ArrayList<Integer> arrayList = new ArrayList<>();
         LinkedList<Integer> linkedList = new LinkedList<>();
 
@@ -86,6 +90,38 @@ public class Main {
         linkedList.remove(n/2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for sletning af element: LinkedList O(n) og O(1): " + (stop - start) + " ms");
+    }
 
+    // Opgave 2: Søgning i List vs Hashset
+    public static void arrayListVSHashSet (int n) {
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        HashSet<Integer> hashSet = new HashSet<>();
+
+        for (int i = 0; i < n; i++) {
+            arrayList.add(i);
+            hashSet.add(i);
+        }
+
+        // Søgning på element der findes:
+        long start = System.currentTimeMillis();
+        boolean result = arrayList.contains(n/2);
+        long stop = System.currentTimeMillis();
+        System.out.println("Tid for .contains() af element der findes: Arraylist O(n): " + (stop - start) + " ms");
+
+        start = System.currentTimeMillis();
+        boolean result2 = hashSet.contains(n/2);
+        stop = System.currentTimeMillis();
+        System.out.println("Tid for .contains() af element der findes: HashSet O(1): " + (stop - start) + " ms");
+
+        // Søgning på element der ikke findes:
+        start = System.currentTimeMillis();
+        boolean result3 = arrayList.contains(n + 1);
+        stop = System.currentTimeMillis();
+        System.out.println("Tid for .contains() af element der IKKE findes: Arraylist O(n): " + (stop - start) + " ms");
+
+        start = System.currentTimeMillis();
+        boolean result4 = hashSet.contains(n + 1);
+        stop = System.currentTimeMillis();
+        System.out.println("Tid for .contains() af element der IKKE findes: HashSet O(1): " + (stop - start) + " ms");
     }
 }
