@@ -16,7 +16,7 @@ public class Main {
         System.out.println(Arrays.toString(arr1));
 
         // Quick Sort
-        int[] arr2 = {1, 2, 4, 2 ,5, 5, 10, 5, 7};
+        int[] arr2 = {1, 4, 2, 5, 10, 7};
         quickSort(arr2, 0, arr2.length - 1);
         System.out.println(Arrays.toString(arr2));
 
@@ -108,7 +108,7 @@ public class Main {
         if (low < high) {
             // Rekursivt kald
             int pivot = partition(arr, low, high);
-            quickSort(arr, low, pivot - 1);
+            quickSort(arr, low, pivot - 1); // Pivot sættes til sidste indexplads i array
             quickSort(arr, pivot + 1, high);
         }
     }
@@ -117,9 +117,9 @@ public class Main {
         int i = low - 1; // i er index for det sidste element, som er mindre end pivot
         int pivotValue = arr[high]; // Sidste element i array er pivot
 
-        // Loop kører så array fra low til lige før pivotValue
+        // Loop kører fra low til lige før pivotValue
         for (int j = low; j < high; j++) {
-            if (arr[j] <= pivotValue) { // Tjekker om det på j'te plads er mindre en pivot
+            if (arr[j] <= pivotValue) { // Tjekker om det på j'te plads er mindre end pivot
                 i++; // Hvis mindre, så kigger vi på næste element i rækken
                 swap(arr, i, j); // Rykker det mindre tal til venstre
             }
