@@ -75,7 +75,6 @@ public class Main {
         // Opgave 3: Backtracking
         static boolean solveMaze(int row, int col) {
 
-
             // Tjek om man er out of bounds
             if (row > N - 1 || row < 0 || col > N - 1 || col < 0 ) return false;
 
