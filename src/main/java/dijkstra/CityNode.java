@@ -24,4 +24,6 @@ public class CityNode {
     public void addNeighbour (CityNode neighbour, int distance) {
         neighbours.put(neighbour, distance);
     }
+
+
 }
