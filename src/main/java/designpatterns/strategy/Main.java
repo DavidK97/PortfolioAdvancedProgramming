@@ -1,14 +1,11 @@
 package designpatterns.strategy;
 
+import designpatterns.strategy.heuristics.EuclideanHeuristic;
+import designpatterns.strategy.heuristics.ManhattanHeuristic;
+
 import java.util.*;
 
 public class Main {
-     private static HeuristicStrategy currentHeuristic;
-
-    public static void setHeuristic(HeuristicStrategy heuristic) {
-        currentHeuristic = heuristic;
-    }
-
     // 0 = veje og 1 = blokeret
     static int[][] grid = {
             {0,0,1,1,0,0,0,0},
@@ -77,86 +74,13 @@ public class Main {
         CityNode source = cities.get("Østby");
         CityNode destination = cities.get("Sydby");
 
-        System.out.println("Manhattan");
-        setHeuristic(new ManhattanHeuristic());
-        findShortestPath(source, destination);
+        Astar astar = new Astar();
 
-        System.out.println("Euclidean: ");
-        setHeuristic(new EuclideanHeuristic());
-        findShortestPath(source, destination);
+        astar.setHeuristic(new ManhattanHeuristic());
+        astar.findShortestPath(source, destination);
+
+        astar.setHeuristic(new EuclideanHeuristic());
+        astar.findShortestPath(source, destination);
 
     }
-
-    // Algoritmen
-    private static void findShortestPath (CityNode source, CityNode destination) {
-        Map<CityNode, CityNode> prev = new HashMap<>();
-        Map<CityNode, Integer> dist = new HashMap<>();
-        Set<CityNode> visited = new HashSet<>();
-
-        PriorityQueue<CityNodeWithDist> queue = new PriorityQueue<>();
-
-        queue.add(new CityNodeWithDist(
-                source,
-                0,
-                currentHeuristic.calculateHeuristic(source, destination)));
-        dist.put(source, 0);
-
-        while (!queue.isEmpty()) {
-            CityNodeWithDist current = queue.poll();
-
-            if (current.cityNode.equals(destination)) break;
-
-            if (visited.contains((current.cityNode))) continue;
-
-            visited.add(current.cityNode);
-
-            for (CityNode neighbour : current.cityNode.getNeighbours()) {
-                if (visited.contains(neighbour)) continue;
-
-                int newDist = current.gCost + 1;
-
-                if (newDist < dist.getOrDefault(neighbour, Integer.MAX_VALUE)) {
-                    dist.put(neighbour, newDist);
-                    prev.put(neighbour, current.cityNode);
-
-                    queue.add(new CityNodeWithDist(
-                            neighbour,
-                            newDist,
-                            currentHeuristic.calculateHeuristic(neighbour, destination)));
-                }
-            }
-        }
-
-        // Rekonstruer hurtigste path
-        List<String> path = new ArrayList<>();
-        CityNode step = destination;
-
-        while (step != null) {
-            path.add(0, "(" + step.getRow() + "," + step.getColumn() + ")");
-            step = prev.get(step);
-        }
-
-        System.out.println("Korteste vej: " + path);
-        System.out.println("Antal skridt: " + (path.size() - 1));
-    }
-
-
-
-    private static class CityNodeWithDist implements Comparable<CityNodeWithDist> {
-        CityNode cityNode;
-        int gCost;
-        int fCost;
-
-        public CityNodeWithDist(CityNode cityNode, int gCost, int hCost) {
-            this.cityNode = cityNode;
-            this.gCost = gCost;
-            this.fCost = gCost + hCost;
-        }
-
-        @Override
-        public int compareTo(CityNodeWithDist other) {
-            return Integer.compare(this.fCost, other.fCost);
-        }
-    }
-
 }

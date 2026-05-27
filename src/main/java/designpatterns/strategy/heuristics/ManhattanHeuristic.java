@@ -1,6 +1,8 @@
-package designpatterns.strategy;
+package designpatterns.strategy.heuristics;
 
-public class ManhattanHeuristic implements HeuristicStrategy{
+import designpatterns.strategy.CityNode;
+
+public class ManhattanHeuristic implements HeuristicStrategy {
 
     @Override
     public int calculateHeuristic(CityNode source, CityNode destination) {

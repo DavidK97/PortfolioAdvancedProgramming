@@ -1,4 +1,6 @@
-package designpatterns.strategy;
+package designpatterns.strategy.heuristics;
+
+import designpatterns.strategy.CityNode;
 
 public class EuclideanHeuristic implements HeuristicStrategy {
 
