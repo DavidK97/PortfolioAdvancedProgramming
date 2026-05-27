@@ -140,10 +140,6 @@ public class Main {
 
 
 
-
-
-
-
     private static class CityNodeWithDist implements Comparable<CityNodeWithDist> {
         CityNode cityNode;
         int gCost;
