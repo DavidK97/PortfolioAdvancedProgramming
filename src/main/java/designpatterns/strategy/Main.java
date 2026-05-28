@@ -76,9 +76,11 @@ public class Main {
 
         Astar astar = new Astar();
 
+        System.out.println("Manhattan: ");
         astar.setHeuristic(new ManhattanHeuristic());
         astar.findShortestPath(source, destination);
 
+        System.out.println("Euclidean: ");
         astar.setHeuristic(new EuclideanHeuristic());
         astar.findShortestPath(source, destination);
 
