@@ -84,6 +84,9 @@ public class Main {
     }
 
     // Anden Heuristik
+    private static int euclideanHeuristic (CityNode source, CityNode destination) {
+        return 0;
+    }
 
     // Algoritmen
     private static void findShortestPath (CityNode source, CityNode destination) {
