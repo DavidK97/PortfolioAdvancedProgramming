@@ -70,10 +70,6 @@ public class Main {
 
             // Hvis de mødes
             if (slow == fast) return true;
-
-            // Hvis skilpadden stod stille og haren hoppede med 1,
-            // så ville man ikke kunne detecte en cirkulær liste som starter som en non-cirkulær liste,
-            // Fordi kun haren ender i cirklen.
         }
     }
 
