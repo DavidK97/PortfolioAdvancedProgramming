@@ -45,6 +45,12 @@ public class Main {
         }
     }
 
+
+
+
+
+
+    // Opgave 2: CycleDetector
     public static boolean hasCycle (Node head) {
         Node slow = head;
         Node fast = head;

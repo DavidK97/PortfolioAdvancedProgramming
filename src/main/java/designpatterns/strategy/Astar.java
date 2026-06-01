@@ -50,7 +50,7 @@ public class Astar {
             }
         }
 
-        // Rekonstruer hurtigste path
+        // Rekonstruer korteste path
         List<String> path = new ArrayList<>();
         CityNode step = destination;
 
@@ -62,7 +62,6 @@ public class Astar {
         System.out.println("Korteste vej: " + path);
         System.out.println("Antal skridt: " + (path.size() - 1));
     }
-
 
 
     private static class CityNodeWithDist implements Comparable<CityNodeWithDist> {

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A* By-Visualisering</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #151820;
+            --surface2: #1c2030;
+            --border: #2a2f3e;
+            --text: #e2e6f0;
+            --muted: #6b7490;
+            --accent: #4f8ef7;
+
+            --unvisited-fill: #1a2035;
+            --unvisited-stroke: #3a4560;
+            --queue-fill: #2a1f00;
+            --queue-stroke: #d4900a;
+            --visited-fill: #001a10;
+            --visited-stroke: #1a8a4a;
+            --current-fill: #2a1500;
+            --current-stroke: #f07030;
+            --path-fill: #1a0a20;
+            --path-stroke: #a060f0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        header .title-area {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .selectors-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .selector-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .select-style {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            flex: 1;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        .graph-area {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #graph-svg {
+            width: 100%;
+            flex: 1;
+            max-height: calc(100vh - 180px);
+            background: var(--surface);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            letter-spacing: 0.03em;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .btn:hover:not(:disabled) { background: #252a3a; border-color: #4a5070; }
+        .btn:disabled { opacity: 0.35; cursor: default; }
+        .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn.primary:hover:not(:disabled) { background: #3a7de8; }
+
+        .step-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+            margin-left: auto;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.2s;
+        }
+
+        .sidebar {
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .msg-box {
+            background: var(--surface2);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text);
+            min-height: 52px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .pq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .pq-header, .pq-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 4px 6px;
+        }
+        .pq-header {
+            color: var(--muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+        }
+        .pq-item {
+            background: #2a1f00;
+            border: 1px solid #d4900a;
+            border-radius: 4px;
+        }
+        .pq-empty {
+            font-size: 12px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .dist-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            align-items: center;
+            padding: 5px 6px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+        }
+        .dist-row.header {
+            color: var(--muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--muted);
+        }
+        .dist-row:last-child { border-bottom: none; }
+        .dist-name { color: var(--text); }
+        .dist-val { font-family: 'JetBrains Mono', monospace; text-align: right; }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid;
+            flex-shrink: 0;
+        }
+
+        .log-panel {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 16px;
+            background: #090a0e;
+        }
+        .log-panel::-webkit-scrollbar { width: 4px; }
+        .log-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .log-entry {
+            font-size: 11px;
+            padding: 4px 6px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            color: var(--muted);
+            border-left: 2px solid transparent;
+        }
+        .log-entry.current { background: var(--surface2); border-left-color: var(--accent); color: var(--text); }
+        .log-entry.done { border-left-color: #a060f0; color: #c090ff; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="title-area">
+        <h1>A* NAVIGATION</h1>
+    </div>
+
+    <div class="selectors-area">
+        <div class="selector-group">
+            <label for="start-select">Start:</label>
+            <select id="start-select" class="select-style" onchange="changeRoute()">
+                <option value="2,7" selected>Østby (2,7)</option>
+                <option value="0,0">Nordby (0,0)</option>
+                <option value="4,1">Vestby (4,1)</option>
+                <option value="6,5">Sydby (6,5)</option>
+            </select>
+        </div>
+
+        <div class="selector-group">
+            <label for="end-select">Slut:</label>
+            <select id="end-select" class="select-style" onchange="changeRoute()">
+                <option value="2,7">Østby (2,7)</option>
+                <option value="0,0">Nordby (0,0)</option>
+                <option value="4,1">Vestby (4,1)</option>
+                <option value="6,5" selected>Sydby (6,5)</option>
+            </select>
+        </div>
+
+        <div class="selector-group">
+            <label for="heuristic-select">Heuristik:</label>
+            <select id="heuristic-select" class="select-style" onchange="changeHeuristic()">
+                <option value="manhattan">Manhattan Distance</option>
+                <option value="euclidean">Euclidean (Fugleflugt)</option>
+            </select>
+        </div>
+    </div>
+</header>
+
+<div class="layout">
+    <div class="graph-area">
+        <svg id="graph-svg" viewBox="0 0 600 600">
+            <g id="grid-lines" stroke="#161a24" stroke-width="1"></g>
+            <g id="edges-layer"></g>
+            <g id="nodes-layer"></g>
+        </svg>
+        <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+        <div class="controls">
+            <button class="btn" id="btn-prev" onclick="step(-1)" disabled>← Forrige</button>
+            <button class="btn primary" id="btn-next" onclick="step(1)">Næste →</button>
+            <button class="btn" onclick="reset()">↺ Reset</button>
+            <span class="step-counter" id="step-lbl">1 / 1</span>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="panel">
+            <div class="panel-title">Nuværende trin</div>
+            <div class="msg-box" id="msg-box">Klik Næste for at starte.</div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Prioritetskø (Sorteret efter F)</div>
+            <div class="pq-header">
+                <span>By (Row,Col)</span><span>g</span><span>h</span><span style="text-align:right;">f</span>
+            </div>
+            <div id="pq-box" class="pq-container"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Omkostningstabel</div>
+            <div id="dist-table"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Forklaring</div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#1a2035;border-color:#3a4560"></div>Vej / By</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#2a1f00;border-color:#d4900a"></div>I kø</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#001a10;border-color:#1a8a4a"></div>Lukket</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#2a1500;border-color:#f07030"></div>Aktiv</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#1a0a20;border-color:#a060f0"></div>Rute</div>
+            </div>
+        </div>
+
+        <div class="panel-title" style="padding:16px 16px 4px">Log</div>
+        <div class="log-panel" id="log-panel"></div>
+    </div>
+</div>
+
+<script>
+    const GRID = [
+        [0,0,1,1,0,0,0,0],
+        [1,0,0,0,0,1,1,0],
+        [1,0,1,1,0,1,1,0],
+        [1,0,1,1,0,0,0,0],
+        [1,0,1,1,0,1,1,0],
+        [1,0,0,0,0,0,1,0],
+        [1,0,1,1,1,0,0,0],
+        [1,0,0,1,1,1,1,1]
+    ];
+    const ROWS = 8, COLS = 8;
+
+    const CITIES = {
+        "0,0": "Nordby",
+        "6,5": "Sydby",
+        "2,7": "Østby",
+        "4,1": "Vestby"
+    };
+
+    const NODES = {};
+    for(let r=0; r<ROWS; r++) {
+        for(let c=0; c<COLS; c++) {
+            if(GRID[r][c] === 0) {
+                const id = `${r},${c}`;
+                NODES[id] = {
+                    id, r, c,
+                    label: CITIES[id] ? CITIES[id] : `(${r},${c})`,
+                    isMajorCity: !!CITIES[id],
+                    x: c * 70 + 55,
+                    y: r * 70 + 55
+                };
+            }
+        }
+    }
+
+    const DIRS = [[-1,0],[1,0],[0,-1],[0,1]];
+    const EDGES = [];
+    const adj = {};
+    Object.keys(NODES).forEach(id => adj[id] = []);
+
+    Object.values(NODES).forEach(n => {
+        DIRS.forEach(d => {
+            const nr = n.r + d[0], nc = n.c + d[1];
+            const nid = `${nr},${nc}`;
+            if(NODES[nid]) {
+                adj[n.id].push({node: nid, w: 1});
+                if(n.id < nid) EDGES.push({a: n.id, b: nid, w: 1});
+            }
+        });
+    });
+
+    let currentHeuristic = 'manhattan';
+
+    function heuristic(aId, bId) {
+        const nodeA = NODES[aId], nodeB = NODES[bId];
+        if(currentHeuristic === 'manhattan') {
+            return Math.abs(nodeB.r - nodeA.r) + Math.abs(nodeB.c - nodeA.c);
+        } else {
+            return Math.round(Math.sqrt(Math.pow(nodeB.r - nodeA.r, 2) + Math.pow(nodeB.c - nodeA.c, 2)) * 10) / 10;
+        }
+    }
+
+    function runAStar(start, end) {
+        const INF = 1e9;
+        const gCost = {}, prev = {}, visited = new Set(), inQueue = new Set();
+        Object.keys(NODES).forEach(n => { gCost[n] = INF; prev[n] = null; });
+
+        gCost[start] = 0;
+        let pq = [[heuristic(start, end), 0, heuristic(start, end), start]];
+        inQueue.add(start);
+        const snaps = [];
+
+        const getPqSnapshot = (q) => [...q].sort((a,b) => a[0] - b[0]).map(i => ({f:i[0], g:i[1], h:i[2], id:i[3]}));
+
+        snaps.push({
+            gCost:{...gCost}, visited:new Set(visited), inQueue:new Set(inQueue), prev:{...prev},
+            pqState: getPqSnapshot(pq), current: null, msg: `Start: ${NODES[start].label}. g=0, h=${heuristic(start,end)}, f=${heuristic(start,end)}.`, done: false
+        });
+
+        while (pq.length) {
+            pq.sort((a,b) => a[0] - b[0]);
+
+            snaps.push({
+                gCost:{...gCost}, visited:new Set(visited), inQueue:new Set(inQueue), prev:{...prev},
+                pqState: getPqSnapshot(pq), current: null, msg: `Kigger på Prioritetskøen efter laveste F-pris...`, done: false
+            });
+
+            const [f, g, h, u] = pq.shift();
+            inQueue.delete(u);
+
+            if (visited.has(u)) continue;
+            visited.add(u);
+
+            snaps.push({
+                gCost:{...gCost}, visited:new Set(visited), inQueue:new Set(inQueue), prev:{...prev},
+                pqState: getPqSnapshot(pq), current: u, msg: `Trækker ${NODES[u].label} ud. (g: ${g} + h: ${h} = f: ${f}).`, done: false
+            });
+
+            if (u === end) break;
+
+            for (const neighbor of adj[u]) {
+                const v = neighbor.node;
+                if (visited.has(v)) continue;
+
+                const tentativG = gCost[u] + neighbor.w;
+                if (tentativG < gCost[v]) {
+                    gCost[v] = tentativG;
+                    prev[v] = u;
+                    const hV = heuristic(v, end);
+                    const fV = tentativG + hV;
+                    pq.push([fV, tentativG, hV, v]);
+                    inQueue.add(v);
+
+                    snaps.push({
+                        gCost:{...gCost}, visited:new Set(visited), inQueue:new Set(inQueue), prev:{...prev},
+                        pqState: getPqSnapshot(pq), current: u, msg: `Opdaterer nabo ${NODES[v].label}: g=${tentativG}, h=${hV} → f=${fV.toFixed(1)} ✓`, done: false
+                    });
+                }
+            }
+        }
+
+        const path = [];
+        let stepNode = end;
+        while(stepNode) { path.unshift(stepNode); stepNode = prev[stepNode]; }
+
+        const last = snaps[snaps.length - 1];
+        last.done = true; last.path = path;
+
+        if (gCost[end] === INF) {
+            last.msg = `❌ Ingen rute fundet mellem ${NODES[start].label} og ${NODES[end].label}!`;
+        } else {
+            last.msg = `✓ Rute fundet! ${path.map(n=>NODES[n].label).join(' → ')} (${gCost[end]} skridt)`;
+        }
+        return snaps;
+    }
+
+    let STEPS = [];
+    let cur = 0;
+
+    // Byg baggrundsgridets linjer
+    const gridLines = document.getElementById('grid-lines');
+    for(let i=0; i<ROWS; i++) {
+        const lineY = i * 70 + 55;
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', 20); l.setAttribute('y1', lineY); l.setAttribute('x2', 580); l.setAttribute('y2', lineY);
+        gridLines.appendChild(l);
+    }
+    for(let j=0; j<COLS; j++) {
+        const lineX = j * 70 + 55;
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', lineX); l.setAttribute('y1', 20); l.setAttribute('x2', lineX); l.setAttribute('y2', 580);
+        gridLines.appendChild(l);
+    }
+
+    function getState(id, snap) {
+        if (snap.done && snap.path && snap.path.includes(id) && snap.gCost[id] < 1e9) return 'path';
+        if (id === snap.current) return 'current';
+        if (snap.visited.has(id)) return 'visited';
+        if (snap.inQueue.has(id)) return 'inQueue';
+        return 'unvisited';
+    }
+
+    const STYLES = {
+        unvisited: {fill:'#1a2035', stroke:'#3a4560', r:12},
+        inQueue:   {fill:'#2a1f00', stroke:'#d4900a', r:14},
+        visited:   {fill:'#001a10', stroke:'#1a8a4a', r:12},
+        current:   {fill:'#2a1500', stroke:'#f07030', r:16},
+        path:      {fill:'#1a0a20', stroke:'#a060f0', r:15},
+    };
+
+    function render() {
+        const snap = STEPS[cur];
+        const endNodeId = document.getElementById('end-select').value;
+        const eLayer = document.getElementById('edges-layer');
+        const nLayer = document.getElementById('nodes-layer');
+        eLayer.innerHTML = ''; nLayer.innerHTML = '';
+
+        EDGES.forEach(e => {
+            const a = NODES[e.a], b = NODES[e.b];
+            let color = '#2a3050', width = 2;
+
+            if(snap.done && snap.path && snap.gCost[endNodeId] < 1e9) {
+                const idxA = snap.path.indexOf(e.a), idxB = snap.path.indexOf(e.b);
+                if(idxA !== -1 && idxB !== -1 && Math.abs(idxA - idxB) === 1) {
+                    color = '#a060f0'; width = 4;
+                }
+            } else if(snap.current === e.a || snap.current === e.b) {
+                color = '#d4900a'; width = 2.5;
+            }
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+            line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+            line.setAttribute('stroke', color); line.setAttribute('stroke-width', width);
+            eLayer.appendChild(line);
+        });
+
+        Object.entries(NODES).forEach(([id, nd]) => {
+            const state = getState(id, snap);
+            const style = STYLES[state];
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+            const radius = nd.isMajorCity ? style.r * 1.4 : style.r;
+
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', nd.x); c.setAttribute('cy', nd.y); c.setAttribute('r', radius);
+            c.setAttribute('fill', style.fill); c.setAttribute('stroke', style.stroke);
+            c.setAttribute('stroke-width', nd.isMajorCity ? '3' : '1.5');
+            g.appendChild(c);
+
+            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            t.setAttribute('x', nd.x); t.setAttribute('y', nd.y - radius - 6);
+            t.setAttribute('text-anchor', 'middle');
+            t.setAttribute('font-size', nd.isMajorCity ? '11px' : '9px');
+            t.setAttribute('font-family', 'JetBrains Mono, monospace');
+            t.setAttribute('fill', nd.isMajorCity ? '#ffffff' : '#6b7490');
+            t.textContent = nd.label;
+            g.appendChild(t);
+
+            const inf = 1e9;
+            const gVal = snap.gCost[id];
+            if(gVal !== inf) {
+                const fVal = gVal + heuristic(id, endNodeId);
+                const ft = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                ft.setAttribute('x', nd.x); ft.setAttribute('y', nd.y + radius + 11);
+                ft.setAttribute('text-anchor', 'middle');
+                ft.setAttribute('font-size', '9px');
+                ft.setAttribute('font-family', 'JetBrains Mono');
+                ft.setAttribute('fill', style.stroke);
+                ft.textContent = `f:${fVal.toFixed(0)}`;
+                g.appendChild(ft);
+            }
+
+            nLayer.appendChild(g);
+        });
+
+        document.getElementById('msg-box').textContent = snap.msg;
+        document.getElementById('msg-box').style.borderLeftColor = snap.done ? '#a060f0' : snap.current ? '#f07030' : '#4f8ef7';
+
+        const pqBox = document.getElementById('pq-box');
+        if(snap.pqState && snap.pqState.length > 0) {
+            pqBox.innerHTML = snap.pqState.map(i => `
+                <div class="pq-item">
+                    <span>${NODES[i.id].label}</span>
+                    <span style="color:var(--muted)">${i.g}</span>
+                    <span style="color:var(--muted)">${i.h.toFixed(0)}</span>
+                    <span style="color:#d4900a; text-align:right; font-weight:600;">${i.f.toFixed(0)}</span>
+                </div>
+            `).join('');
+        } else {
+            pqBox.innerHTML = '<div class="pq-empty">Køen er tom</div>';
+        }
+
+        const inf = 1e9;
+        const table = document.getElementById('dist-table');
+        table.innerHTML = `
+            <div class="dist-row header"><span>By</span><span>g</span><span>h</span><span style="text-align:right;">f</span></div>
+        ` + Object.entries(NODES).map(([id, nd]) => {
+            const gVal = snap.gCost[id];
+            const hVal = heuristic(id, endNodeId);
+            const fVal = gVal + hVal;
+            const state = getState(id, snap);
+            const col = state==='path'?'#a060f0':state==='current'?'#f07030':state==='visited'?'#1a8a4a':state==='inQueue'?'#d4900a':'#3a4560';
+
+            return `
+                <div class="dist-row">
+                    <span class="dist-name" style="color:${col}">${nd.label}</span>
+                    <span class="dist-val">${gVal===inf?'∞':gVal}</span>
+                    <span class="dist-val" style="color:var(--muted)">${hVal.toFixed(0)}</span>
+                    <span class="dist-val" style="color:${col}; font-weight:600;">${gVal===inf?'∞':fVal.toFixed(0)}</span>
+                </div>
+            `;
+        }).join('');
+
+        const log = document.getElementById('log-panel');
+        log.innerHTML = STEPS.slice(0, cur+1).map((s, i) => {
+            const cls = i === cur ? (s.done ? 'done' : 'current') : '';
+            return `<div class="log-entry ${cls}">${s.msg}</div>`;
+        }).join('');
+        log.scrollTop = log.scrollHeight;
+
+        document.getElementById('step-lbl').textContent = `${cur+1} / ${STEPS.length}`;
+        document.getElementById('progress').style.width = ((cur+1)/STEPS.length*100)+'%';
+        document.getElementById('btn-prev').disabled = cur === 0;
+        document.getElementById('btn-next').disabled = cur === STEPS.length - 1;
+    }
+
+    function step(d) { cur = Math.max(0, Math.min(STEPS.length-1, cur+d)); render(); }
+    function reset() { cur = 0; render(); }
+
+    // Udløses når ruten ændres (start/slut dropdowns)
+    function changeRoute() {
+        const startId = document.getElementById('start-select').value;
+        const endId = document.getElementById('end-select').value;
+        STEPS = runAStar(startId, endId);
+        cur = 0;
+        render();
+    }
+
+    function changeHeuristic() {
+        currentHeuristic = document.getElementById('heuristic-select').value;
+        changeRoute();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key==='ArrowRight'||e.key==='ArrowDown') step(1);
+        if (e.key==='ArrowLeft'||e.key==='ArrowUp') step(-1);
+    });
+
+    // Start programmet første gang
+    changeRoute();
+</script>
+</body>
+</html>

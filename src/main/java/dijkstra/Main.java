@@ -32,13 +32,12 @@ public class Main {
         findShortestPath(helsingør, helsinge);
     }
 
+
+
     public static void findShortestPath(CityNode start, CityNode destination) {
         Map<CityNode, CityNode> prev = new HashMap<>();
-
         Map<CityNode, Integer> distance = new HashMap<>();
-
         Set<CityNode> visited = new HashSet<>();
-
         PriorityQueue<CityNodeWithDistance> queue = new PriorityQueue<>();
 
         queue.add(new CityNodeWithDistance(start, 0));
@@ -47,15 +46,11 @@ public class Main {
         while (!queue.isEmpty()) {
             CityNodeWithDistance current = queue.poll();
 
-
             if (current.cityNode.equals(destination)) break;
-
 
             if (visited.contains(current.cityNode)) continue;
 
-
             visited.add(current.cityNode);
-
 
             for (Map.Entry<CityNode, Integer> entry : current.cityNode.getNeighbours().entrySet()) {
                 CityNode next = entry.getKey();
@@ -64,9 +59,7 @@ public class Main {
 
                 if (visited.contains(next)) continue;
 
-
                 int newDist = current.distance + weight;
-
 
                 if (newDist < distance.getOrDefault(next, Integer.MAX_VALUE)) {
                     distance.put(next, newDist);
@@ -75,16 +68,18 @@ public class Main {
                     queue.add(new CityNodeWithDistance(next, newDist));
                 }
             }
-
-            List<String> path = new ArrayList<>();
-            CityNode step = destination;
-            while (step != null) {
-                path.add(0, step.getName());
-                step = prev.get(step);
-            }
-
-            System.out.println("Korteste vej: " + path);
-            System.out.println("Samlet dist: " + distance.get(destination));
         }
+
+
+
+        List<String> path = new ArrayList<>();
+        CityNode step = destination;
+        while (step != null) {
+            path.add(0, step.getName());
+            step = prev.get(step);
+
+        }
+        System.out.println("Korteste vej: " + path);
+        System.out.println("Samlet dist: " + distance.get(destination));
     }
 }
