@@ -1,5 +1,17 @@
 # Portfolio: Kompleksitet og datastrukturer
 
+
+## AGENDA FOR FREMLÆGGELSE
+
+* Hvad er kompleksitet?
+* Hvad kan vi bruge det til?
+* Hvordan spiller det sammen med datastrukturer?
+* Hvad har vi været igennem?
+* Gennemgang af opgave 2
+
+
+
+
 ## 1. Leg med kompleksitet
 
 - Kig på klassen `BigOExamples`, som viser eksempler på fire forskellige kompleksiteter. Kør `main` og se de forskellige metoder

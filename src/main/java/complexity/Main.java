@@ -22,7 +22,7 @@ public class Main {
         System.out.println("O(n) eksempel sum: " + result2);
 
         // Opgave 1: O log(n) eksempel:
-        int result3 = multiply(100);
+        int result3 = multiply(1000);
         System.out.println("log(n) eksempel sum: " + result3);
 
 
@@ -80,51 +80,51 @@ public class Main {
             linkedList.add(i);
         }
 
-        // Hent element i midten ArrayList
+        // Hent element i midten af ArrayList
         long start = System.currentTimeMillis();
         int middle = arrayList.get(n/2);
         long stop = System.currentTimeMillis();
         System.out.println("Tid for hentning af element: ArrayList O(1): " + (stop - start) + " ms");
-        // Konstant tid O(1): Elementet findes ved 1 operation da vi har en direkte reference til placering i hukommelsen via indexet
+
 
         // Hent element i midten LinkedList
         start = System.currentTimeMillis();
         int middle2 = linkedList.get(n/2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for hentning af element: LinkedList O(n): " + (stop - start) + " ms");
-        // Lineær tid O(n): Elementerne i listen kender kun til deres naboer og vi skal derfor igennem hvert element indtil vi når midten
+        // Hvad hvis det var i starten?
 
         // Indsæt element midt i listen ArrayList
         start = System.currentTimeMillis();
         arrayList.add(n/2, 99);
         stop = System.currentTimeMillis();
         System.out.println("Tid for indsætning af element: ArrayList O(n): " + (stop - start) + " ms");
-        // O(1) konstant tid for at finde midsten, men når vi indsætter så skal alt efter midten f
-        // O(n) når alt så skal rykkes en plads til højre, så hvert element får en ny indexplacering
+        // Hvad hvis det var i slutningen af ArrayListen?
+
 
         // Indsæt element midt i listen LinkedList
         start = System.currentTimeMillis();
         linkedList.add(n/2, 99);
         stop = System.currentTimeMillis();
         System.out.println("Tid for indsætning af element: LinkeList O(n): " + (stop - start) + " ms");
-        // Lineær tid O(n) for at finde midten så skal vi igennem alle elementer indtil vi når midten
-        // konstant tid O(1) når vi så indsætter noget i midten
+        // Hvad hvis det var i starten af listen ved head?
+
 
         // Slet element midt i listen ArrayList
         start = System.currentTimeMillis();
         arrayList.remove(n/2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for sletning af element: ArrayList O(n): " + (stop - start) + " ms");
-        // Konstant tid O(1) for at finde midten
-        // Lineær tid O(n) for at rykke alle elementer én plads mod venstre for at ændre indexplacering
+        // Hvad hvis det var i slutningen?
 
         // Slet element midt i listen LinkedList
         start = System.currentTimeMillis();
         linkedList.remove(n/2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for sletning af element: LinkedList O(n): " + (stop - start) + " ms");
-        // Lineær tid O(n) for at finde midten
-        // Konstant tid O(1) for at lave nye referencer til naboelementerne for at "lappe" hullet
+        // Hvad hvis det var ved head?
+
+        // Så hvornår vil vi bruge ArrayList og hvornår vil vi bruge LinkedList?
     }
 
     // Opgave 2: Søgning i List vs Hashset
@@ -137,33 +137,38 @@ public class Main {
             hashSet.add(i);
         }
 
-        // Søgning på element der findes ArrayList:
+        // Søgning (.contains()) på element der findes i ArrayList:
         long start = System.currentTimeMillis();
         boolean result = arrayList.contains(n / 2);
         long stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der findes: Arraylist O(n): " + (stop - start) + " ms");
-        // Lineær tid O(n) da vi skal loope hvert element igennem for at se om det indeholder den søgte værdi
 
-        // Søgning på element der findes LinkedList:
+        // Søgning (.contains()) på element der findes i HashSet:
         start = System.currentTimeMillis();
         boolean result2 = hashSet.contains(n / 2);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der findes: HashSet O(1): " + (stop - start) + " ms");
-        // Konstant tid O(1), da vi hasher værdien og via hash koden finder adressen i hukommelsen og ser om elementer er der
 
-        // Søgning på element der ikke findes arrayList:
+        // Hvad ville der ske hvis ens hashCode() altid returnerede den samme hardcoded værdi?
+
+
+
+        // Søgning på element der ikke findes i ArrayList:
         start = System.currentTimeMillis();
         boolean result3 = arrayList.contains(n + 1);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der IKKE findes: Arraylist O(n): " + (stop - start) + " ms");
-        // Lineær tid O(n), vi looper igennem hele listen for at se om elementet er deri
 
-        // Søgning på element der ikke findes linkedList:
+        // Hvad er worst case her ?
+
+
+        // Søgning på element der ikke findes i HashSet:
         start = System.currentTimeMillis();
         boolean result4 = hashSet.contains(n + 1);
         stop = System.currentTimeMillis();
         System.out.println("Tid for .contains() af element der IKKE findes: HashSet O(1): " + (stop - start) + " ms");
-        // Konstant tid O(1), vi hasher værdien, kigger og ser at der ikke findes noget i hukommelsen
+
+        // Så hvornår bruger vi HashSet og hvornår vil vi vælge ArrayList?
     }
 
 
@@ -218,9 +223,11 @@ public class Main {
         stop = System.nanoTime();
         System.out.println("Tid for .remove() TreeSet O(log n): " + (stop - start) + " ns");
 
-        // HashSet er hurtigere i alle operationer, da den bare skal hashe værdien og finde "bucketen" i hukommelsen,
-        // mens at treeSet skal compareTo() hver gang den skal "vælge vej" i træet.
+
+        // Så hvis HashSet altid er hurtigere, hvornår bruger vi så et TreeSet?
     }
+
+
 
 
 }

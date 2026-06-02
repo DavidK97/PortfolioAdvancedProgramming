@@ -3,7 +3,7 @@ package complexity.entities;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-//
+
 public class Resident implements Comparable <Resident> {
     private int id;
     private String firstName;
@@ -26,6 +26,7 @@ public class Resident implements Comparable <Resident> {
     @Override
     public int hashCode() {
         return Objects.hash(id, firstName, lastName);
+        // Hvad ville der ske hvis ens hashCode() returnerede de samme værdi?
     }
 
     // Bestemmer hvordan TreeSet sorteres

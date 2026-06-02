@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickSort Fuld Visualisering - [1, 4, 2, 5, 10, 7]</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght=400;600&family=DM+Sans:wght=300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #151820;
+            --surface2: #1c2030;
+            --border: #2a2f3e;
+            --text: #e2e6f0;
+            --muted: #6b7490;
+            --accent: #4f8ef7;
+
+            --pivot-color: #a060f0;
+            --smaller-color: #1a8a4a;
+            --current-color: #f07030;
+            --i-color: #d4900a;
+            --inactive-color: #1a1c23;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .visual-area {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .array-container {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            height: 250px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .bar {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s, background-color 0.3s, border-color 0.3s;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        .bar-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .idx-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .pointer-container {
+            height: 40px;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            gap: 16px;
+            position: relative;
+        }
+
+        .pointer-tag {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-align: center;
+            transition: left 0.3s, background-color 0.3s, top 0.3s;
+            transform: translateX(-50%);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn:hover:not(:disabled) { background: #252a3a; }
+        .btn:disabled { opacity: 0.35; cursor: default; }
+        .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .sidebar {
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: #0b0d12;
+        }
+
+        .panel {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .msg-box {
+            background: var(--surface);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            border-left: 3px solid var(--accent);
+            min-height: 60px;
+        }
+
+        .code-block {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #a9b7c6;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            transition: background-color 0.2s;
+            border-radius: 2px;
+            padding: 0 4px;
+        }
+        .code-line.active {
+            background-color: #2b3244;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>QUICKSORT FULD REKURSIV VISUALISERING</h1>
+    <div id="sub-lbl" style="font-size: 12px; color: var(--muted);">Aktivt subarray: low = 0, high = 5</div>
+</header>
+
+<div class="layout">
+    <div class="visual-area">
+        <div class="array-container" id="array-box"></div>
+        <div class="pointer-container" id="pointer-box"></div>
+
+        <div class="controls">
+            <button class="btn" id="btn-prev" onclick="step(-1)" disabled>← Forrige</button>
+            <button class="btn primary" id="btn-next" onclick="step(1)">Næste trin →</button>
+            <button class="btn" onclick="resetSim()">↺ Start forfra</button>
+            <span id="step-lbl" style="font-family:'JetBrains Mono'; font-size:12px; color:var(--muted); margin-left:auto;">1 / 1</span>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="panel">
+            <div class="panel-title">Hvad sker der nu?</div>
+            <div class="msg-box" id="msg-box"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Metode Sporing</div>
+            <div class="code-block">
+                <div class="code-line" id="ln-1">int i = low - 1;</div>
+                <div class="code-line" id="ln-2">int pivotValue = arr[high];</div>
+                <div class="code-line" id="ln-3">for (int j = low; j &lt; high; j++) {</div>
+                <div class="code-line" id="ln-4">&nbsp;&nbsp;&nbsp;&nbsp;if (arr[j] &lt;= pivotValue) {</div>
+                <div class="code-line" id="ln-5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;i++;</div>
+                <div class="code-line" id="ln-6">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swap(arr, i, j);</div>
+                <div class="code-line" id="ln-7">&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+                <div class="code-line" id="ln-8">}</div>
+                <div class="code-line" id="ln-9">swap(arr, i + 1, high);</div>
+                <div class="code-line" id="ln-10">return i + 1;</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const START_ARR = [1, 4, 2, 5, 10, 7];
+    let ALL_STEPS = [];
+    let cur = 0;
+
+    // Kører ægte QuickSort og optager samtlige trin på tværs af alle rekursive kald
+    function buildFullSimulation() {
+        let arr = [...START_ARR];
+        let steps = [];
+
+        function quickSortSim(low, high) {
+            if (low < high) {
+                let pIdx = partitionSim(low, high);
+                quickSortSim(low, pIdx - 1);
+                quickSortSim(pIdx + 1, high);
+            } else if (low === high) {
+                steps.push({
+                    arr: [...arr], low: low, high: high, i: null, j: null, activeLine: 0,
+                    msg: `Base case nået: Subarrayet på index [${low}] har kun 1 element (${arr[low]}). Det er automatisk sorteret!`
+                });
+            }
+        }
+
+        function partitionSim(low, high) {
+            let i = low - 1;
+            let pivotValue = arr[high];
+
+            steps.push({
+                arr: [...arr], low: low, high: high, i: i, j: null, activeLine: 1,
+                msg: `Nyt under-kald: partition(arr, low=${low}, high=${high}). i starter på ${i}.`
+            });
+
+            steps.push({
+                arr: [...arr], low: low, high: high, i: i, j: null, activeLine: 2,
+                msg: `Lokal pivot valgt som det sidste element i dette område: arr[${high}] = ${pivotValue}.`
+            });
+
+            for (let j = low; j < high; j++) {
+                steps.push({
+                    arr: [...arr], low: low, high: high, i: i, j: j, activeLine: 4,
+                    msg: `Tjekker index j=${j}: Er arr[j] (${arr[j]}) <= pivot (${pivotValue})?`
+                });
+
+                if (arr[j] <= pivotValue) {
+                    i++;
+                    steps.push({
+                        arr: [...arr], low: low, high: high, i: i, j: j, activeLine: 5,
+                        msg: `Ja! ${arr[j]} <= ${pivotValue}. i rykkes frem til index ${i}.`
+                    });
+
+                    let t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+
+                    steps.push({
+                        arr: [...arr], low: low, high: high, i: i, j: j, activeLine: 6,
+                        msg: `swap(arr, i=${i}, j=${j}). Da i og j er ens, sker der ingen visuel ændring for ${arr[i]}.`
+                    });
+                } else {
+                    steps.push({
+                        arr: [...arr], low: low, high: high, i: i, j: j, activeLine: 3,
+                        msg: `Nej! ${arr[j]} > ${pivotValue}. i rører sig ikke.`
+                    });
+                }
+            }
+
+            steps.push({
+                arr: [...arr], low: low, high: high, i: i, j: null, activeLine: 9,
+                msg: `Loop for dette område færdigt. Vi rykker pivot (${pivotValue}) til sin endelige plads: swap(arr, i+1=${i+1}, high=${high}).`
+            });
+
+            let t = arr[i + 1]; arr[i + 1] = arr[high]; arr[high] = t;
+
+            steps.push({
+                arr: [...arr], low: low, high: high, i: i, j: null, activeLine: 10,
+                msg: `✓ Pivot (${pivotValue}) er nu placeret korrekt på index ${i + 1}. Returnerer dette index.`
+            });
+
+            return i + 1;
+        }
+
+        quickSortSim(0, arr.length - 1);
+
+        steps.push({
+            arr: [...arr], low: 0, high: arr.length - 1, i: null, j: null, activeLine: 0,
+            msg: `🎉 ALGORITMEN ER HELT FÆRDIG! Arrayet er nu fuldstændig sorteret: [${arr.join(', ')}].`
+        });
+
+        return steps;
+    }
+
+    ALL_STEPS = buildFullSimulation();
+
+    function render() {
+        const stepData = ALL_STEPS[cur];
+        const arrayBox = document.getElementById('array-box');
+        const pointerBox = document.getElementById('pointer-box');
+
+        arrayBox.innerHTML = '';
+        pointerBox.innerHTML = '';
+
+        document.getElementById('sub-lbl').textContent = `Aktivt område: low = ${stepData.low}, high = ${stepData.high}`;
+
+        stepData.arr.forEach((val, idx) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'bar-wrapper';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = `${val * 18 + 20}px`;
+
+            // Tjek om elementet overhovedet er en del af det aktive subarray
+            const isInsideActiveRange = (idx >= stepData.low && idx <= stepData.high);
+
+            if (!isInsideActiveRange) {
+                bar.style.backgroundColor = 'var(--inactive-color)';
+                bar.style.borderColor = '#15171e';
+                bar.style.opacity = '0.25';
+            } else {
+                if (idx === stepData.high && stepData.j !== null) {
+                    bar.style.backgroundColor = 'var(--pivot-color)'; // Pivot farve
+                    bar.style.borderColor = '#bd80ff';
+                } else if (idx === stepData.j) {
+                    bar.style.backgroundColor = 'var(--current-color)'; // J farve
+                    bar.style.borderColor = '#ff9050';
+                } else if (idx <= stepData.i && idx >= stepData.low && stepData.j !== null) {
+                    bar.style.backgroundColor = 'var(--smaller-color)'; // Mindre end pivot
+                    bar.style.borderColor = '#2abd6e';
+                }
+            }
+
+            const valLbl = document.createElement('span');
+            valLbl.className = 'bar-value';
+            valLbl.textContent = val;
+            bar.appendChild(valLbl);
+
+            const idxLbl = document.createElement('span');
+            idxLbl.className = 'idx-lbl';
+            idxLbl.textContent = `[${idx}]`;
+
+            wrapper.appendChild(bar);
+            wrapper.appendChild(idxLbl);
+            arrayBox.appendChild(wrapper);
+        });
+
+        const containerWidth = arrayBox.clientWidth - 40;
+        const slotWidth = containerWidth / START_ARR.length;
+
+        if (stepData.i !== null && stepData.i >= -1) {
+            const iTag = document.createElement('div');
+            iTag.className = 'pointer-tag';
+            iTag.style.backgroundColor = 'var(--i-color)';
+            iTag.style.color = '#000';
+            const posX = (stepData.i + 0.5) * slotWidth + 20;
+            iTag.style.left = `${posX}px`;
+            iTag.innerHTML = `i = ${stepData.i}`;
+            pointerBox.appendChild(iTag);
+        }
+
+        if (stepData.j !== null) {
+            const jTag = document.createElement('div');
+            jTag.className = 'pointer-tag';
+            jTag.style.backgroundColor = 'var(--current-color)';
+            jTag.style.color = '#fff';
+            jTag.style.top = '18px';
+            const posX = (stepData.j + 0.5) * slotWidth + 20;
+            jTag.style.left = `${posX}px`;
+            jTag.innerHTML = `j = ${stepData.j}`;
+            pointerBox.appendChild(jTag);
+        }
+
+        document.getElementById('msg-box').textContent = stepData.msg;
+
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        const activeLineEl = document.getElementById(`ln-${stepData.activeLine}`);
+        if (activeLineEl) activeLineEl.classList.add('active');
+
+        document.getElementById('step-lbl').textContent = `${cur + 1} / ${ALL_STEPS.length}`;
+        document.getElementById('btn-prev').disabled = cur === 0;
+        document.getElementById('btn-next').disabled = cur === ALL_STEPS.length - 1;
+    }
+
+    function step(d) {
+        cur = Math.max(0, Math.min(ALL_STEPS.length - 1, cur + d));
+        render();
+    }
+
+    function resetSim() {
+        cur = 0;
+        render();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
+    });
+
+    window.addEventListener('resize', render);
+    render();
+</script>
+</body>
+</html>
