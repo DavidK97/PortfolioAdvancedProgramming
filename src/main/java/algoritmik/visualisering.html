@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Backtracking Visualisering (6x6)</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght=400;600&family=DM+Sans:wght=300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #151820;
+            --surface2: #1c2030;
+            --border: #2a2f3e;
+            --text: #e2e6f0;
+            --muted: #6b7490;
+            --accent: #4f8ef7;
+
+            --path-color: #4f8ef7;
+            --wall-color: #1a1d26;
+            --floor-color: #232838;
+            --backtrack-color: #d4900a;
+            --success-color: #1a8a4a;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .visual-area {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        /* 6x6 Grid Board */
+        .maze-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 60px); /* Lidt mindre celler for at passe */
+            grid-template-rows: repeat(6, 60px);
+            gap: 8px;
+            background: var(--surface);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .cell {
+            background: var(--floor-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .cell.wall {
+            background: var(--wall-color);
+            border-color: #111;
+        }
+        .cell.wall::after {
+            content: "❌";
+            font-size: 16px;
+            opacity: 0.4;
+        }
+
+        .cell.active-path {
+            background: var(--path-color);
+            border-color: #79aeff;
+            box-shadow: 0 0 15px rgba(79, 142, 247, 0.4);
+            color: #fff;
+        }
+
+        .cell.backtracked {
+            background: var(--backtrack-color);
+            border-color: #ffc457;
+            color: #fff;
+        }
+
+        .cell.goal {
+            border: 2px dashed #1a8a4a;
+        }
+        .cell.goal::before {
+            content: "MÅL";
+            position: absolute;
+            bottom: 4px;
+            font-size: 8px;
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .cell.success {
+            background: var(--success-color) !important;
+            border-color: #34d399 !important;
+            color: white;
+        }
+
+        .cell-coord {
+            font-size: 8px;
+            color: rgba(255,255,255,0.25);
+            position: absolute;
+            top: 3px;
+            left: 5px;
+        }
+        .cell.active-path .cell-coord, .cell.backtracked .cell-coord {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .cell-val {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn:hover:not(:disabled) { background: #252a3a; }
+        .btn:disabled { opacity: 0.35; cursor: default; }
+        .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .sidebar {
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: #0b0d12;
+        }
+
+        .panel {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .msg-box {
+            background: var(--surface);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            border-left: 3px solid var(--accent);
+            min-height: 80px;
+        }
+
+        .code-block {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.45;
+            color: #a9b7c6;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            transition: background-color 0.2s;
+            border-radius: 2px;
+            padding: 0 4px;
+        }
+        .code-line.active {
+            background-color: #2b3244;
+            color: #fff;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>MAZE BACKTRACKING VISUALISERING (6x6)</h1>
+    <div id="status-lbl" style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--muted);">solveMaze(0,0)</div>
+</header>
+
+<div class="layout">
+    <div class="visual-area">
+        <div class="maze-grid" id="maze-board"></div>
+
+        <div class="controls">
+            <button class="btn" id="btn-prev" onclick="step(-1)" disabled>← Forrige</button>
+            <button class="btn primary" id="btn-next" onclick="step(1)">Næste trin →</button>
+            <button class="btn" onclick="resetSim()">↺ Nulstil</button>
+            <span id="step-lbl" style="font-family:'JetBrains Mono'; font-size:12px; color:var(--muted); margin-left:auto;">1 / 1</span>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="panel">
+            <div class="panel-title">Algoritmens status & Log</div>
+            <div class="msg-box" id="msg-box"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Din Rekursive Java-kode</div>
+            <div class="code-block">
+                <div class="panel-title" style="margin-bottom: 6px; color: var(--accent); opacity: 0.7;">static int N = 6;</div>
+                <div class="panel-title" style="margin-bottom: 12px; color: var(--accent); opacity: 0.7; text-transform: none;">// { 1, 0, 1, 1, 1, 0 } ...</div>
+                <div class="code-line" id="ln-1">static boolean solveMaze(int row, int col) {</div>
+                <div class="code-line" id="ln-2">&nbsp;&nbsp;&nbsp;&nbsp;if (row > N-1 || row < 0 || col > N-1 || col < 0) return false;</div>
+                <div class="code-line" id="ln-3">&nbsp;&nbsp;&nbsp;&nbsp;if (path[row][col] == 1) return false;</div>
+                <div class="code-line" id="ln-4">&nbsp;&nbsp;&nbsp;&nbsp;if (maze[row][col] == 0) return false;</div>
+                <div class="code-line" id="ln-5">&nbsp;&nbsp;&nbsp;&nbsp;path[row][col] = 1;</div>
+                <div class="code-line" id="ln-6">&nbsp;&nbsp;&nbsp;&nbsp;if (row == N - 1 && col == N - 1) return true;</div>
+                <div class="code-line" id="ln-7">&nbsp;&nbsp;&nbsp;&nbsp;if (solveMaze(row + 1, col)) return true; // Ned</div>
+                <div class="code-line" id="ln-8">&nbsp;&nbsp;&nbsp;&nbsp;if (solveMaze(row, col + 1)) return true; // Højre</div>
+                <div class="code-line" id="ln-9">&nbsp;&nbsp;&nbsp;&nbsp;if (solveMaze(row - 1, col)) return true; // Op</div>
+                <div class="code-line" id="ln-10">&nbsp;&nbsp;&nbsp;&nbsp;if (solveMaze(row, col - 1)) return true; // Venstre</div>
+                <div class="code-line" id="ln-11">&nbsp;&nbsp;&nbsp;&nbsp;path[row][col] = 0; // Backtrack!</div>
+                <div class="code-line" id="ln-12">&nbsp;&nbsp;&nbsp;&nbsp;return false;</div>
+                <div class="code-line" id="ln-13">}</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Farveforklaring</div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color" style="background:var(--floor-color); border:1px solid var(--border)"></div>Åbent felt (maze = 1)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--wall-color)"></div>Lukket mur (maze = 0)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--path-color)"></div>Aktiv sti lige nu (path = 1)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--backtrack-color)"></div>Backtracked felt (Vasket rent: path = 0)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--success-color)"></div>Målet er fundet! (Retur true)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const N = 6;
+    // Din nye labyrint
+    const MAZE = [
+        [1, 0, 1, 1, 1, 0],
+        [1, 1, 1, 0, 1, 0],
+        [0, 0, 1, 0, 1, 1],
+        [0, 1, 1, 1, 0, 1],
+        [0, 1, 0, 0, 0, 1],
+        [0, 1, 1, 1, 1, 1]
+    ];
+
+    let STEPS = [];
+    let cur = 0;
+
+    // Generer simulering og gem alle tilstande
+    function generateSimulation() {
+        let steps = [];
+        let pathGrid = Array.from({ length: N }, () => Array(N).fill(0));
+        let cellStatus = Array.from({ length: N }, () => Array(N).fill('empty')); // 'empty', 'path', 'backtracked', 'success'
+
+        function simSolve(r, c) {
+            // Tilføj tjek for out of bounds
+            if (r > N - 1 || r < 0 || c > N - 1 || c < 0) {
+                steps.push({
+                    r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 2,
+                    msg: `Base case: solveMaze(${r}, ${c}) afvises! Koordinatet er uden for banens grænser (Out of Bounds).`
+                });
+                return false;
+            }
+
+            steps.push({
+                r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 1,
+                msg: `solveMaze(${r}, ${c}) kaldes. Tjekker base cases...`
+            });
+
+            // Tjek om gået i ring
+            if (pathGrid[r][c] === 1) {
+                steps.push({
+                    r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 3,
+                    msg: `Base Case: solveMaze(${r}, ${c}) afvises! path[${r}][${c}] er allerede 1. Vi går i ring.`
+                });
+                return false;
+            }
+
+            // Tjek om mur
+            if (MAZE[r][c] === 0) {
+                steps.push({
+                    r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 4,
+                    msg: `Base Case: solveMaze(${r}, ${c}) afvises! maze[${r}][${c}] er 0 (en solid mur).`
+                });
+                return false;
+            }
+
+            // Marker felt
+            pathGrid[r][c] = 1;
+            cellStatus[r][c] = 'path';
+            steps.push({
+                r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 5,
+                msg: `Feltet godkendes! Vi planter et flag: path[${r}][${c}] = 1.`
+            });
+
+            // Tjek mål
+            if (r === N - 1 && c === N - 1) {
+                cellStatus[r][c] = 'success';
+                steps.push({
+                    r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 6,
+                    msg: `🎉 HURRA! Vi har ramt det nederste højre hjørne (${r}, ${c}). Målstregen er nået! Returnerer true.`
+                });
+                return true;
+            }
+
+            // Prøv retninger
+            steps.push({ r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 7, msg: `Fra (${r}, ${c}) prøver vi nu at bevæge os LDRRET ned (row + 1).` });
+            if (simSolve(r + 1, c)) { cellStatus[r][c] = 'success'; return true; }
+
+            steps.push({ r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 8, msg: `Fra (${r}, ${c}) prøver vi nu at bevæge os VANDRET til højre (col + 1).` });
+            if (simSolve(r, c + 1)) { cellStatus[r][c] = 'success'; return true; }
+
+            steps.push({ r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 9, msg: `Fra (${r}, ${c}) prøver vi nu at bevæge os LODRET op (row - 1).` });
+            if (simSolve(r - 1, c)) { cellStatus[r][c] = 'success'; return true; }
+
+            steps.push({ r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 10, msg: `Fra (${r}, ${c}) prøver vi nu at bevæge os VANDRET til venstre (col - 1).` });
+            if (simSolve(r, c - 1)) { cellStatus[r][c] = 'success'; return true; }
+
+            // Backtrack!
+            pathGrid[r][c] = 0;
+            cellStatus[r][c] = 'backtracked';
+            steps.push({
+                r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 11,
+                msg: `🆘 Blindgyde! Alle 4 retninger fra (${r}, ${c}) fejlede. Vi laver BACKTRACKING: fjerner flaget (path[${r}][${c}] = 0) og bakker en plads tilbage.`
+            });
+
+            steps.push({
+                r: r, c: c, path: clone2D(pathGrid), status: clone2D(cellStatus), ln: 12,
+                msg: `solveMaze(${r}, ${c}) returnerer nu false til sin kalder.`
+            });
+
+            return false;
+        }
+
+        simSolve(0, 0);
+        return steps;
+    }
+
+    // Helper to deeply clone 2D arrays
+    function clone2D(arr) {
+        return arr.map(row => [...row]);
+    }
+
+    // Render the grid state to DOM
+    function render() {
+        const stepData = STEPS[cur];
+        const board = document.getElementById('maze-board');
+        board.innerHTML = '';
+
+        document.getElementById('status-lbl').textContent = `solveMaze(${stepData.r}, ${stepData.c})`;
+
+        for (let r = 0; r < N; r++) {
+            for (let c = 0; c < N; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (MAZE[r][c] === 0) cell.classList.add('wall');
+                if (r === N - 1 && c === N - 1) cell.classList.add('goal');
+
+                if (stepData.status[r][c] === 'path') cell.classList.add('active-path');
+                if (stepData.status[r][c] === 'backtracked') cell.classList.add('backtracked');
+                if (stepData.status[r][c] === 'success') cell.classList.add('success');
+
+                const coord = document.createElement('span');
+                coord.className = 'cell-coord';
+                coord.textContent = `${r},${c}`;
+                cell.appendChild(coord);
+
+                const val = document.createElement('span');
+                val.className = 'cell-val';
+                val.textContent = stepData.path[r][c];
+                cell.appendChild(val);
+
+                board.appendChild(cell);
+            }
+        }
+
+        // Highlight the current code line
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        const activeLineEl = document.getElementById(`ln-${stepData.ln}`);
+        if (activeLineEl) activeLineEl.classList.add('active');
+
+        // Update messaging and steps
+        document.getElementById('msg-box').textContent = stepData.msg;
+        document.getElementById('step-lbl').textContent = `${cur + 1} / ${STEPS.length}`;
+
+        // Disable/enable buttons
+        document.getElementById('btn-prev').disabled = (cur === 0);
+        document.getElementById('btn-next').disabled = (cur === STEPS.length - 1);
+    }
+
+    function step(d) {
+        cur = Math.max(0, Math.min(STEPS.length - 1, cur + d));
+        render();
+    }
+
+    function resetSim() {
+        cur = 0;
+        render();
+    }
+
+    // Initialize
+    STEPS = generateSimulation();
+    render();
+
+</script>
+</body>
+</html>

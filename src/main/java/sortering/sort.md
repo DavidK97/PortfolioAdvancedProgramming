@@ -1,5 +1,11 @@
 # Portfolio: Sortering
 
+
+## AGENDA FOR FREMLÆGGELSE
+* Hvad har vi arbejdet med?
+* Hvordan spiller kompleksitet ind?
+* Gennemgang af Quick Sort med kort
+
 ## 1. Bubble sort
 - Kig på klassen `searchandsort.SortExamples` og metoden `bubbleSort()`.
 - Prøv at køre metoden `testBubble` fra `Main.main` og se om du forstår hvad der sker.

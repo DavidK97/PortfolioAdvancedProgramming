@@ -1,5 +1,13 @@
 # Portfolio: Design Patterns
 
+-------------
+## AGENDA FOR FREMLÆGGELSE
+
+
+
+
+--------------
+
 ## 1. Strategy på A*
 
 Kig på klassen `graphs.astar.MazeSolver` eller din egen implementation

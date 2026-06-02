@@ -1,6 +1,8 @@
 # Portfolio: Kompleksitet og datastrukturer
 
 
+
+-----------------------
 ## AGENDA FOR FREMLÆGGELSE
 
 * Hvad er kompleksitet?
@@ -8,6 +10,8 @@
 * Hvordan spiller det sammen med datastrukturer?
 * Hvad har vi været igennem?
 * Gennemgang af opgave 2
+
+----------------------
 
 
 

@@ -1,4 +1,16 @@
 # Portfolio: Algoritmer
+-------------------
+## AGENDA FOR FREMLÆGGELSE
+* Hvad har vi beskæftiget os med?
+* Hvad er en cyklisk liste?
+* Gennemgang af Cycle Detector og Backtracking
+------------------
+![CykliskeLister.png](docs/CykliskeLister.png)
+-------------------
+![img.png](docs/img.png)
+------------------
+
+
 
 ## 1. Tegn en cyklisk liste
 Kig på klassen `algorithms.circularlinkedList.ListFactory`. 

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klassisk Bubble Sort med i, j, n Pointere</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght=400;600&family=DM+Sans:wght=300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0d0f14;
+            --surface: #151820;
+            --surface2: #1c2030;
+            --border: #2a2f3e;
+            --text: #e2e6f0;
+            --muted: #6b7490;
+            --accent: #4f8ef7;
+
+            --compare-color: #f07030;
+            --swap-color: #d4900a;
+            --sorted-color: #1a8a4a;
+
+            /* Pointer farver */
+            --i-ptr: #4f8ef7;
+            --j-ptr: #f07030;
+            --n-ptr: #e2e6f0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        header h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            flex: 1;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        .visual-area {
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .array-container {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            height: 220px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .bar-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .bar {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s, background-color 0.3s, border-color 0.3s;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        .bar-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .idx-lbl {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .pointer-lane {
+            height: 110px;
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            background: rgba(21, 24, 32, 0.3);
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+        }
+
+        .pointer-tag {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-align: center;
+            transition: left 0.3s, top 0.3s;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn:hover:not(:disabled) { background: #252a3a; }
+        .btn:disabled { opacity: 0.35; cursor: default; }
+        .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .sidebar {
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: #0b0d12;
+        }
+
+        .panel {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .msg-box {
+            background: var(--surface);
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+            border-left: 3px solid var(--accent);
+            min-height: 60px;
+        }
+
+        .code-block {
+            background: var(--surface);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #a9b7c6;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            transition: background-color 0.2s;
+            border-radius: 2px;
+            padding: 0 4px;
+        }
+        .code-line.active {
+            background-color: #2b3244;
+            color: #fff;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>KLASSISK BUBBLE SORT VISUALISERING</h1>
+    <div style="font-family: 'JetBrains Mono'; font-size: 12px; color: var(--muted);">Uden early stop (Kører alle runder)</div>
+</header>
+
+<div class="layout">
+    <div class="visual-area">
+        <div class="array-container" id="array-box"></div>
+
+        <div class="pointer-lane" id="lane-box"></div>
+
+        <div class="controls">
+            <button class="btn" id="btn-prev" onclick="step(-1)" disabled>← Forrige</button>
+            <button class="btn primary" id="btn-next" onclick="step(1)">Næste trin →</button>
+            <button class="btn" onclick="resetSim()">↺ Start forfra</button>
+            <span id="step-lbl" style="font-family:'JetBrains Mono'; font-size:12px; color:var(--muted); margin-left:auto;">1 / 1</span>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="panel">
+            <div class="panel-title">Hvad sker der nu?</div>
+            <div class="msg-box" id="msg-box"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Din Java-kode</div>
+            <div class="code-block">
+                <div class="code-line" id="ln-1">int n = arr.length;</div>
+                <div class="code-line" id="ln-2">for (int i = 0; i &lt; n - 1; i++) {</div>
+                <div class="code-line" id="ln-3">&nbsp;&nbsp;&nbsp;&nbsp;for (int j = 0; j &lt; n - i - 1; j++) {</div>
+                <div class="code-line" id="ln-4">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (arr[j] &gt; arr[j + 1]) {</div>
+                <div class="code-line" id="ln-5">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swap(arr, j, j + 1);</div>
+                <div class="code-line" id="ln-6">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+                <div class="code-line" id="ln-7">&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+                <div class="code-line" id="ln-8">}</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">Pointer og Farveforklaring</div>
+            <div class="legend" style="gap: 12px;">
+                <div class="legend-item"><div class="legend-color" style="background:var(--i-ptr)"></div><b>i pointer:</b> Tæller ydre runder (0 til n-2)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--j-ptr)"></div><b>j pointer:</b> Scanner elementerne (j vs j+1)</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--n-ptr); border:1px solid #fff;"></div><b>n pointer:</b> Arrayets faste længde (index 6)</div>
+                <hr style="border:0; border-top:1px solid var(--border)">
+                <div class="legend-item"><div class="legend-color" style="background:var(--compare-color)"></div>Elementer der sammenlignes nu</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--swap-color)"></div>Elementer under en 'swap' operation</div>
+                <div class="legend-item"><div class="legend-color" style="background:var(--sorted-color)"></div>Elementer låst i den grønne zone (n - i - 1)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const START_ARR = [1, 4, 2, 5, 10, 7];
+    let STEPS = [];
+    let cur = 0;
+
+    function generateSimulation() {
+        let arr = [...START_ARR];
+        let n = arr.length;
+        let steps = [];
+
+        steps.push({
+            arr: [...arr], i: null, j: null, n: n, sortedCount: 0, activeLine: 1, isSwap: false,
+            msg: `Algoritmen starter. n sættes til arrayets samlede længde: n = ${n}.`
+        });
+
+        for (let i = 0; i < n - 1; i++) {
+            steps.push({
+                arr: [...arr], i: i, j: null, n: n, sortedCount: i, activeLine: 2, isSwap: false,
+                msg: `Ydre loop: i = ${i}. Vi gør klar til en komplet scanning.`
+            });
+
+            for (let j = 0; j < n - i - 1; j++) {
+                steps.push({
+                    arr: [...arr], i: i, j: j, n: n, sortedCount: i, activeLine: 4, isSwap: false,
+                    msg: `Indre loop: j = ${j}. Sammenligner arr[j] (${arr[j]}) med arr[j+1] (${arr[j+1]}).`
+                });
+
+                if (arr[j] > arr[j + 1]) {
+                    let temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+
+                    steps.push({
+                        arr: [...arr], i: i, j: j, n: n, sortedCount: i, activeLine: 5, isSwap: true,
+                        msg: `Ja! ${arr[j+1]} > ${arr[j]}. swap(arr, j, j+1) flytter det største tal til højre.`
+                    });
+                } else {
+                    steps.push({
+                        arr: [...arr], i: i, j: j, n: n, sortedCount: i, activeLine: 3, isSwap: false,
+                        msg: `Nej! ${arr[j]} er ikke større end ${arr[j+1]}. Ingen ændring.`
+                    });
+                }
+            }
+
+            steps.push({
+                arr: [...arr], i: i, j: null, n: n, sortedCount: i + 1, activeLine: 3, isSwap: false,
+                msg: `Runde færdig for i = ${i}. Tallet på index ${n - i - 1} (${arr[n - i - 1]}) er nu lagt permanent i den grønne zone.`
+            });
+        }
+
+        steps.push({
+            arr: [...arr], i: null, j: null, n: n, sortedCount: n, activeLine: 8, isSwap: false,
+            msg: `🎉 ALGORITMEN ER SLUT! Alle loops kørte til ende (i < n - 1). Slutresultat: [${arr.join(', ')}].`
+        });
+
+        return steps;
+    }
+
+    STEPS = generateSimulation();
+
+    function render() {
+        const stepData = STEPS[cur];
+        const arrayBox = document.getElementById('array-box');
+        const laneBox = document.getElementById('lane-box');
+
+        arrayBox.innerHTML = '';
+        laneBox.innerHTML = '';
+
+        const nSize = START_ARR.length;
+        const firstSortedIdx = nSize - stepData.sortedCount;
+
+        // Render Søjlerne
+        stepData.arr.forEach((val, idx) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'bar-wrapper';
+
+            const bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.height = `${val * 13 + 30}px`;
+
+            if (idx >= firstSortedIdx) {
+                bar.style.backgroundColor = 'var(--sorted-color)';
+                bar.style.borderColor = '#2abd6e';
+            } else if (stepData.j !== null && (idx === stepData.j || idx === stepData.j + 1)) {
+                if (stepData.isSwap) {
+                    bar.style.backgroundColor = 'var(--swap-color)';
+                    bar.style.borderColor = '#ffb82b';
+                } else {
+                    bar.style.backgroundColor = 'var(--compare-color)';
+                    bar.style.borderColor = '#ff9050';
+                }
+            }
+
+            const valLbl = document.createElement('span');
+            valLbl.className = 'bar-value';
+            valLbl.textContent = val;
+            bar.appendChild(valLbl);
+
+            const idxLbl = document.createElement('span');
+            idxLbl.className = 'idx-lbl';
+            idxLbl.textContent = `[${idx}]`;
+
+            wrapper.appendChild(bar);
+            wrapper.appendChild(idxLbl);
+            arrayBox.appendChild(wrapper);
+        });
+
+        // Beregn grid-koordinat for pointerne
+        const containerWidth = arrayBox.clientWidth - 40;
+        const slotWidth = containerWidth / nSize;
+
+        function getXPosition(index) {
+            return (index + 0.5) * slotWidth + 20;
+        }
+
+        // 1. j-pointer (Øverste række i banen)
+        if (stepData.j !== null) {
+            const jTag = document.createElement('div');
+            jTag.className = 'pointer-tag';
+            jTag.style.backgroundColor = 'var(--j-ptr)';
+            jTag.style.color = '#fff';
+            jTag.style.top = '10px';
+            jTag.style.left = `${getXPosition(stepData.j)}px`;
+            jTag.innerHTML = `j (${stepData.j})`;
+            laneBox.appendChild(jTag);
+
+            const jNextTag = document.createElement('div');
+            jNextTag.className = 'pointer-tag';
+            jNextTag.style.backgroundColor = 'rgba(240, 112, 48, 0.5)';
+            jNextTag.style.color = '#fff';
+            jNextTag.style.top = '10px';
+            jNextTag.style.left = `${getXPosition(stepData.j + 1)}px`;
+            jNextTag.innerHTML = `j + 1`;
+            laneBox.appendChild(jNextTag);
+        }
+
+        // 2. i-pointer (Midterste række i banen)
+        if (stepData.i !== null) {
+            const iTag = document.createElement('div');
+            iTag.className = 'pointer-tag';
+            iTag.style.backgroundColor = 'var(--i-ptr)';
+            iTag.style.color = '#fff';
+            iTag.style.top = '45px';
+            iTag.style.left = `${getXPosition(stepData.i)}px`;
+            iTag.innerHTML = `i = ${stepData.i}`;
+            laneBox.appendChild(iTag);
+        }
+
+        // 3. n-pointer (Nederste række i banen - står solidt på index n (6))
+        if (stepData.n !== null) {
+            const nTag = document.createElement('div');
+            nTag.className = 'pointer-tag';
+            nTag.style.backgroundColor = 'var(--n-ptr)';
+            nTag.style.color = '#000';
+            nTag.style.top = '80px';
+            const posX_n = (stepData.n === nSize) ? (nSize * slotWidth + 10) : getXPosition(stepData.n);
+            nTag.style.left = `${posX_n}px`;
+            nTag.innerHTML = `n = ${stepData.n}`;
+            laneBox.appendChild(nTag);
+        }
+
+        // Beskedtekst og kodelink
+        document.getElementById('msg-box').textContent = stepData.msg;
+
+        document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+        const activeLineEl = document.getElementById(`ln-${stepData.activeLine}`);
+        if (activeLineEl) activeLineEl.classList.add('active');
+
+        document.getElementById('step-lbl').textContent = `${cur + 1} / ${STEPS.length}`;
+        document.getElementById('btn-prev').disabled = cur === 0;
+        document.getElementById('btn-next').disabled = cur === STEPS.length - 1;
+    }
+
+    function step(d) {
+        cur = Math.max(0, Math.min(STEPS.length - 1, cur + d));
+        render();
+    }
+
+    function resetSim() {
+        cur = 0;
+        render();
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') step(1);
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') step(-1);
+    });
+
+    window.addEventListener('resize', render);
+    render();
+</script>
+</body>
+</html>

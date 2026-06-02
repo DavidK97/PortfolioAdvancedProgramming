@@ -7,6 +7,7 @@ public class Main {
     // Opgave 3: Backtracking
     static final int N = 6;
 
+
     static int[][] maze = {
             {1, 0, 1, 1, 1, 0},
             {1, 1, 1, 0, 1, 0},
@@ -56,19 +57,15 @@ public class Main {
         Node fast = head;
 
         while (true) {
-            // Skildpaddens hop
-            if (slow == null) return false; // hvis null så er den ikke cyklisk
+            if (slow == null) return false;
             slow = slow.next;
 
-            // Hare første hop
             if (fast == null) return false;
             fast = fast.next;
 
-            // Hare andet hop
             if (fast == null) return false;
             fast = fast.next;
 
-            // Hvis de mødes
             if (slow == fast) return true;
         }
     }
@@ -77,13 +74,9 @@ public class Main {
         // Opgave 3: Backtracking
         static boolean solveMaze(int row, int col) {
 
-            // Tjek om man er out of bounds
+            // Tjek om man er out of bounds, er feltet afprøvet og om det er gyldigt
             if (row > N - 1 || row < 0 || col > N - 1 || col < 0 ) return false;
-
-            // Tjek om feltet er prøvet før
             if (path[row][col] == 1) return false;
-
-            // Tjek om felt er gyldigt
             if (maze[row][col] == 0) return false;
 
             // Marker felt som en del af stien
@@ -94,16 +87,9 @@ public class Main {
 
 
             // Prøv de 4 retninger
-            // Ned
             if (solveMaze(row + 1, col)) return true;
-
-            // Højre
             if (solveMaze(row, col + 1)) return true;
-
-            // Op
             if (solveMaze(row - 1, col)) return true;
-
-            // Venstre
             if (solveMaze(row, col - 1)) return true;
 
             // Backtrack

@@ -6,7 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         //Bubble Sort
-        int[] arr0 = {1, 2, 4, 2 ,5, 5, 10, 5, 7};
+        int[] arr0 = {1,  4, 2, 5, 10, 7};
         bubbleSort(arr0);
         System.out.println(Arrays.toString(arr0));
 
@@ -23,22 +23,20 @@ public class Main {
     }
 
 
-    // Ydre løkke sørger for at vi får gennemløbet hele arrayet.
-    // I hver iteration bobler det nuværende højeste tal så langt til højre som det kan komme
-    // Indre lykke laver selve sammenligningen mellem 2 tal fra venstre mod højre, så det bobler til højre
+    // Hvad er kompleksiteten?
     public static void bubbleSort (int arr[]) {
         int n = arr.length;
         for (int i = 0; i < n - 1; i++) {
-            for (int j = 0; j < n - i - 1; j++) { // n - i fordi vi ikke behøver kigge på yderste kort til højre fra sidste iteration
-                if (arr[j] > arr[j + 1]) { // Sammenligner det på j'te plads med tallet til højre for
-                    swap(arr, j, j + 1); // Bytter deres placering hvis tallet til venstre er størst
+            for (int j = 0; j < n - i - 1; j++) { // Hvorfor n - 1?
+                if (arr[j] > arr[j + 1]) {
+                    swap(arr, j, j + 1);
                 }
             }
         }
     }
 
     private static void swap(int[] arr, int i, int j) {
-        int temp = arr[i];
+        int temp = arr[i]; // Hvorfor er temp nødvendig?
         arr[i] = arr[j];
         arr[j] = temp;
     }
@@ -100,15 +98,16 @@ public class Main {
 
     /* QuickSort */
     // 'i' bestemmer hvor p skal stå. Da i holder øje med hvor mange kort der er mindre en p.
-    // For hvert swap (hvis et tal er mindre end p), så stiger i
+    // (hvis et tal er mindre end p), så stiger i
     // Når et helt sæt er kørt fra low til high, så skal der byttes på p og i
 
     public static void quickSort (int[] arr, int low, int high) {
         // Basecase. Rekursivt kald stopper hvis low er >= high, hvis der kun er 1 element tilbage
         if (low < high) {
+
             // Rekursivt kald
             int pivot = partition(arr, low, high);
-            quickSort(arr, low, pivot - 1); // Pivot sættes til sidste indexplads i array
+            quickSort(arr, low, pivot - 1);
             quickSort(arr, pivot + 1, high);
         }
     }
@@ -119,9 +118,9 @@ public class Main {
 
         // Loop kører fra low til lige før pivotValue
         for (int j = low; j < high; j++) {
-            if (arr[j] <= pivotValue) { // Tjekker om det på j'te plads er mindre end pivot
-                i++; // Hvis mindre, så kigger vi på næste element i rækken
-                swap(arr, i, j); // Rykker det mindre tal til venstre
+            if (arr[j] <= pivotValue) {
+                i++;
+                swap(arr, i, j);
             }
         }
         // Efter alle tal er tjekket igennem så skal pivot sættes på pladsen til højre for i

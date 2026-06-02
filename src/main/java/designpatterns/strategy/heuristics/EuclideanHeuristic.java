@@ -4,9 +4,10 @@ import designpatterns.strategy.CityNode;
 
 public class EuclideanHeuristic implements HeuristicStrategy {
 
-    // TODO
     @Override
     public int calculateHeuristic(CityNode source, CityNode destination) {
-       return 0;
+        int dRow = source.getRow()    - destination.getRow();
+        int dCol = source.getColumn() - destination.getColumn();
+        return (int) Math.sqrt(dRow * dRow + dCol * dCol);
     }
 }

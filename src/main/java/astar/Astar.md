@@ -1,5 +1,17 @@
 ## Portfolioopgave: A*
 
+## AGENDA FOR FREMLÆGGELSEN
+* Hvad har vi haft om og hvad er det?
+* Regler for grafer og træer
+* Gennemgang af Astar visuelt
+* Dyk ned i koden
+--------------
+![img.png](img.png)
+------------------
+![img_1.png](img_1.png)
+
+-------------
+
 Lav en implementering af A* der finder den korteste vej mellem byer i et grid.
 
 - Design selv dit grid — mindst 8x8 — med byer i nogle celler og veje mellem dem

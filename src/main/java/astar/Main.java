@@ -37,10 +37,10 @@ public class Main {
 
         // Lav edges/forbind til naboer
         int [][] directions = {
-                {-1,0}, // op
-                {1,0},  // ned
-                {0,-1}, // venstre
-                {0,1}   // højre
+                {-1,0},
+                {1,0},
+                {0,-1},
+                {0,1}
         };
 
         for (int row = 0; row < ROWS; row++) {
@@ -85,21 +85,26 @@ public class Main {
 
     // Anden Heuristik
     private static int euclideanHeuristic (CityNode source, CityNode destination) {
-        return 0;
+        int dRow = source.getRow()    - destination.getRow();
+        int dCol = source.getColumn() - destination.getColumn();
+        return (int) Math.sqrt(dRow * dRow + dCol * dCol);
     }
 
-    // Algoritmen
+    // Hvad hvis heuristik returnerede 0?
+
+
     private static void findShortestPath (CityNode source, CityNode destination) {
         Map<CityNode, CityNode> prev = new HashMap<>();
         Map<CityNode, Integer> dist = new HashMap<>();
         Set<CityNode> visited = new HashSet<>();
-
+        // Hvad bruger vi Comparable interfacet til?
         PriorityQueue<CityNodeWithDist> queue = new PriorityQueue<>();
 
         queue.add(new CityNodeWithDist(
                 source,
                 0,
                 manhattanHeuristic(source, destination)));
+
         dist.put(source, 0);
 
         while (!queue.isEmpty()) {
@@ -111,6 +116,7 @@ public class Main {
 
             visited.add(current.cityNode);
 
+            // Beregn pris for naboer
             for (CityNode neighbour : current.cityNode.getNeighbours()) {
                 if (visited.contains(neighbour)) continue;
 
@@ -127,6 +133,7 @@ public class Main {
                 }
             }
         }
+
 
         // Rekonstruer hurtigste path
         List<String> path = new ArrayList<>();

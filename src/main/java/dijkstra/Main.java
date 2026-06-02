@@ -38,9 +38,13 @@ public class Main {
         Map<CityNode, CityNode> prev = new HashMap<>();
         Map<CityNode, Integer> distance = new HashMap<>();
         Set<CityNode> visited = new HashSet<>();
+        // Hvad bruger vi Comparable interfacet til?
         PriorityQueue<CityNodeWithDistance> queue = new PriorityQueue<>();
 
-        queue.add(new CityNodeWithDistance(start, 0));
+        queue.add(new CityNodeWithDistance(
+                start,
+                0));
+
         distance.put(start, 0);
 
         while (!queue.isEmpty()) {
@@ -52,10 +56,10 @@ public class Main {
 
             visited.add(current.cityNode);
 
+            // Beregn pris for naboer
             for (Map.Entry<CityNode, Integer> entry : current.cityNode.getNeighbours().entrySet()) {
                 CityNode next = entry.getKey();
                 int weight = entry.getValue();
-
 
                 if (visited.contains(next)) continue;
 

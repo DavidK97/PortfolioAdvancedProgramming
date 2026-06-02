@@ -1,5 +1,23 @@
 ## Portfolioopgave: Dijkstra
 
+-----------------
+
+## AGENDA FOR FREMLÆGGELSEN
+* Hvad har vi haft om og hvad er det?
+* Regler for grafer og træer
+* Gennemgang af Dijkstra på "papir"
+* Dyk ned i koden
+--------------
+![img.png](img.png)
+-------------
+
+![img_1.png](img_1.png)
+----------------------
+
+
+
+
+
 Lav en implementering af Dijkstras algoritme, der finder den korteste vej mellem byer i et vejnet.
 
 - Design selv dit vejnet med mindst 8 byer og vægtede rettede veje
