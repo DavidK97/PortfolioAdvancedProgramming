@@ -48,12 +48,11 @@ public class Main {
 
                 if (nodes[row][column] == null) continue;
 
-                // Loop tjekker hver direction på nuværende node for naboer
+
                 for (int[] d : directions) {
                     int nr = row + d[0];
                     int nc = column + d[1];
 
-                    // Tjek om vi er inden for grids grænser og at naboen er en node
                     if (nr >= 0 && nr < ROWS &&
                             nc >= 0 && nc < COLS &&
                             nodes[nr][nc] != null) {

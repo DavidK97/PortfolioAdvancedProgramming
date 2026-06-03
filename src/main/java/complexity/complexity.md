@@ -8,7 +8,6 @@
 * Hvad er kompleksitet?
 * Hvad kan vi bruge det til?
 * Hvordan spiller det sammen med datastrukturer?
-* Hvad har vi været igennem?
 * Gennemgang af opgave 2
 
 ----------------------

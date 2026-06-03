@@ -13,23 +13,27 @@ public class AccessController {
             Role roleAnnotation = method.getAnnotation(Role.class);
             Log logAnnotation = method.getAnnotation(Log.class);
 
+            boolean accessGranted = false;
+
+            // Er adgang et krav? Har brugeren rollen?
+            if (roleAnnotation == null || user.getRole().equals(roleAnnotation.value())) {
+                accessGranted = true;
+            }
+
+            // logging
+            if (logAnnotation != null) {
+                System.out.println("Delete logged");
+                logDelete(logAnnotation.fileName(), user.getName(), accessGranted);
+            }
+
+            // Ubeskyttede metoder
             if (roleAnnotation == null) {
                 System.out.println("Metoden '" + methodName + "' kræver ingen rolle – kaldes.");
                 method.invoke(service);
                 return;
             }
 
-            boolean accessGranted = false;
-
-            if (roleAnnotation == null || user.getRole().equals(roleAnnotation.value())) {
-                accessGranted = true;
-            }
-
-            if (logAnnotation != null) {
-                System.out.println("Delete logged");
-                logDelete(logAnnotation.fileName(), user.getName(), accessGranted);
-            }
-
+            // Beskyttede metoder
             String requiredRole = roleAnnotation.value();
             if (user.getRole().equals(requiredRole)) {
                 System.out.println("Adgang givet til '" + methodName + "' for bruger '" + user.getName() + "'");

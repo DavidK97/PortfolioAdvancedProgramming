@@ -3,10 +3,36 @@
 -------------
 ## AGENDA FOR FREMLÆGGELSE
 
+* Hvad er design patterns?
+* Hvilke har vi beskæftiget os med?
+* Gennemgang af refaktorede kode
+
+Creational:
+* Factory Method
+* Builder
+* Singleton
+
+Structural:
+* Composite
+* Decorator
+* Adapter
+* Proxy
+
+Behavioral:
+* Strategy
+* Command
+* Observer
+* Template
+* Decorator
 
 
 
 --------------
+
+
+
+
+
 
 ## 1. Strategy på A*
 

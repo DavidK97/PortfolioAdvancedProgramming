@@ -4,14 +4,17 @@ import java.util.Arrays;
 
 public class Main {
 
+    // Hvad er kompleksiteten for de forskellige sort-algoritmer?
+    // Hvad med heap sort?
+
     public static void main(String[] args) {
         //Bubble Sort
-        int[] arr0 = {1,  4, 2, 5, 10, 7};
+        int[] arr0 = {1, 4, 2, 5, 10, 7};
         bubbleSort(arr0);
         System.out.println(Arrays.toString(arr0));
 
         // MergeSort
-        int[] arr1 = {1, 2, 4, 2 ,5, 5, 10, 5, 7};
+        int[] arr1 = {1, 4, 2, 5, 10, 7};
         mergeSort(arr1);
         System.out.println(Arrays.toString(arr1));
 
@@ -23,7 +26,6 @@ public class Main {
     }
 
 
-    // Hvad er kompleksiteten?
     public static void bubbleSort (int arr[]) {
         int n = arr.length;
         for (int i = 0; i < n - 1; i++) {
@@ -43,47 +45,48 @@ public class Main {
 
 
     public static void mergeSort (int[] arr) {
-        // (Basecase) Condition der bryder rekursivt kald når arrays ikke kan divides mere
+
         if (arr.length < 2) {
             return;
         }
-        // Del i left og right
+
+        // Divide
         int middle = arr.length / 2;
         int[] leftHalf = new int[middle];
         int[] rightHalf = new int[arr.length - middle];
 
-        // Kopier indhold ind i leftHalf:
+        // Kopier
         for (int i = 0; i < middle; i++) {
             leftHalf[i] = arr[i];
         }
-        // Kopier indhold ind i rightHalf:
+        // Kopier
         for (int i = middle; i < arr.length; i++) {
             rightHalf[i - middle] = arr[i];
         }
 
-        // Rekursivt kald indtil alle arrays er divided
-        mergeSort(leftHalf); // Først divides leftHalf helt færdigt og lave nye left and rights og merger dem
-        mergeSort(rightHalf); // Dernæst tages den højre bunke og divides og merges og så merges de 2 "oprindelige bunker"
+        // Divide fortsættes
+        mergeSort(leftHalf);
+        mergeSort(rightHalf);
 
-        // Når alt er diveded, så skal arraysne merges sammen
         merge(arr, leftHalf, rightHalf);
     }
 
     public static void merge (int[] input, int[] leftHalf, int[] rightHalf) {
         int i = 0, l = 0, r = 0;
 
-        // Loop kører så længe der er ints i leftHalf og rightHalf array
+        // Conquer
         while (l < leftHalf.length && r < rightHalf.length) {
-            if (leftHalf[l] <= rightHalf[r]) { // Sammenligning af venstre og højre side
-                input[i] = leftHalf[l]; // Input sættes til left, hvis left er mindst
+            // Rangering
+            if (leftHalf[l] <= rightHalf[r]) {
+                input[i] = leftHalf[l];
                 l++;
             } else {
-                input[i] = rightHalf[r]; // Input sættes til right, hvis right er mindst
+                input[i] = rightHalf[r];
                 r++;
             }
             i++;
         }
-        // Hvis vi har resterende ints i enten leftHalf eller rightHalf
+        // Resterende enkelte ints
         while (l < leftHalf.length) {
             input[i] = leftHalf[l];
             l++;
@@ -96,16 +99,10 @@ public class Main {
         }
     }
 
-    /* QuickSort */
-    // 'i' bestemmer hvor p skal stå. Da i holder øje med hvor mange kort der er mindre en p.
-    // (hvis et tal er mindre end p), så stiger i
-    // Når et helt sæt er kørt fra low til high, så skal der byttes på p og i
-
+    // QuickSort
     public static void quickSort (int[] arr, int low, int high) {
-        // Basecase. Rekursivt kald stopper hvis low er >= high, hvis der kun er 1 element tilbage
         if (low < high) {
 
-            // Rekursivt kald
             int pivot = partition(arr, low, high);
             quickSort(arr, low, pivot - 1);
             quickSort(arr, pivot + 1, high);
@@ -113,18 +110,19 @@ public class Main {
     }
 
     public static int partition (int[] arr, int low, int high) {
-        int i = low - 1; // i er index for det sidste element, som er mindre end pivot
-        int pivotValue = arr[high]; // Sidste element i array er pivot
+        int i = low - 1;
+        int pivotValue = arr[high];
 
-        // Loop kører fra low til lige før pivotValue
         for (int j = low; j < high; j++) {
             if (arr[j] <= pivotValue) {
                 i++;
                 swap(arr, i, j);
             }
         }
-        // Efter alle tal er tjekket igennem så skal pivot sættes på pladsen til højre for i
+
         swap(arr, i + 1, high);
         return i + 1; // Den nye pivot position
     }
+
+    // Hvad er worst case i quicksort?
 }

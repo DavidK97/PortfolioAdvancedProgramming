@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merge Sort Visualisering</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #2c3e50; margin-bottom: 10px; }
+        p { color: #555; max-width: 600px; text-align: center; }
+        #controls { margin: 20px 0; }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #2980b9; }
+        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+        #visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+        .log-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 27px;
+        }
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin: 15px 0;
+        }
+        .array-container {
+            display: inline-flex;
+            margin: 0 15px;
+            border: 2px solid #34495e;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #ecf0f1;
+            transition: all 0.3s ease;
+        }
+        .array-container.active {
+            border-color: #e74c3c;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+        .array-container.merged {
+            border-color: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+        .array-box {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: white;
+            border-right: 1px solid #bdc3c7;
+        }
+        .array-box:last-child { border-right: none; }
+        .merged .array-box { background: #eafaf1; color: #27ae60; }
+        .active .array-box { background: #fdedec; color: #c0392b; }
+    </style>
+</head>
+<body>
+
+<h1>Merge Sort i Aktion</h1>
+<p>Klik på knappen for at se, hvordan din Java-kode splitter arrayet <code>{1, 2, 4, 2, 5, 10, 7}</code> op (Divide) og fletter det sammen igen (Merge).</p>
+
+<div id="controls">
+    <button id="nextBtn">Næste skridt &rarr;</button>
+</div>
+
+<div id="visualization">
+    <div id="log" class="log-message">Klar til start! Klik på knappen.</div>
+    <div id="tree" style="width: 100%;"></div>
+</div>
+
+<script>
+    // Historik over de skridt visualiseringen skal tage os igennem
+    const steps = [
+        { msg: "Start-array: Vi kalder mergeSort({1, 2, 4, 2, 5, 10, 7})", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div>' },
+
+        { msg: "1. DIVIDE: Arrayet deles på midten i Left og Right bunke.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container active"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div>' },
+
+        { msg: "Rekursionen dykker altid i VENSTRE side først. {1, 2, 4} deles nu.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container active"><div class="array-box">1</div></div><div class="array-container active"><div class="array-box">2</div><div class="array-box">4</div></div></div>' },
+
+        { msg: "{1} er klar (base case). Nu deles den højre sub-bunke {2, 4}.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">4</div></div></div><div class="tree-level" style="margin-left: 80px;"><div class="array-container active"><div class="array-box">2</div></div><div class="array-container active"><div class="array-box">4</div></div></div>' },
+
+        { msg: "2. MERGE: {2} og {4} flettes sammen til en sorteret bunke: {2, 4}", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div></div><div class="array-container merged"><div class="array-box">2</div><div class="array-box">4</div></div></div>' },
+
+        { msg: "MERGE: Nu flettes {1} og {2, 4} sammen til {1, 2, 4}.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container merged"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div>' },
+
+        { msg: "Første store 'mergeSort(leftHalf)' er færdig! Nu tages den store højre bunke under behandling og deles.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level" style="margin-left: 200px;"><div class="array-container active"><div class="array-box">2</div><div class="array-box">5</div></div><div class="array-container active"><div class="array-box">10</div><div class="array-box">7</div></div></div>' },
+
+        { msg: "Bunkerne splittes helt ud (De to 'while'-loops vil her sortere {10, 7} om til {7, 10}).", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level" style="margin-left: 200px;"><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div></div><div class="array-container"><div class="array-box">7</div><div class="array-box">10</div></div></div>' },
+
+        { msg: "MERGE: De to underbunker flettes sammen til den store højre side: {2, 5, 7, 10}.", html: '<div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">10</div><div class="array-box">7</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container merged"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">7</div><div class="array-box">10</div></div></div>' },
+
+        { msg: "DEN STORE FINALE: De to færdige bunker flettes sammen i dit hoved-array med '<='. Bemærk at 1 indsættes først, så venstre 2-tal, så højre 2-tal osv.", html: '<div class="tree-level"><div class="array-container merged"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">5</div><div class="array-box">7</div><div class="array-box">10</div></div></div><div class="tree-level"><div class="array-container"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">4</div></div><div class="array-container"><div class="array-box">2</div><div class="array-box">5</div><div class="array-box">7</div><div class="array-box">10</div></div></div>' },
+
+        { msg: "Færdig! Arrayet er nu fuldstændig sorteret: {1, 2, 2, 4, 5, 7, 10}.", html: '<div class="tree-level"><div class="array-container merged"><div class="array-box">1</div><div class="array-box">2</div><div class="array-box">2</div><div class="array-box">4</div><div class="array-box">5</div><div class="array-box">7</div><div class="array-box">10</div></div></div>' }
+    ];
+
+    let currentStep = 0;
+    const logDiv = document.getElementById('log');
+    const treeDiv = document.getElementById('tree');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Initial visning af det første skridt
+    logDiv.innerText = steps[currentStep].msg;
+    treeDiv.innerHTML = steps[currentStep].html;
+
+    nextBtn.addEventListener('click', () => {
+        currentStep++;
+        if (currentStep < steps.length) {
+            logDiv.innerText = steps[currentStep].msg;
+            treeDiv.innerHTML = steps[currentStep].html;
+        }
+        if (currentStep === steps.length - 1) {
+            nextBtn.disabled = true;
+            nextBtn.innerText = "Sortering fuldført!";
+        }
+    });
+</script>
+</body>
+</html>

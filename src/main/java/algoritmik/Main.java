@@ -79,10 +79,10 @@ public class Main {
             if (path[row][col] == 1) return false;
             if (maze[row][col] == 0) return false;
 
-            // Marker felt som en del af stien
+            // Stien
             path[row][col] = 1;
 
-            // Tjek om målet er nået
+            // Mål
             if (row == N - 1 && col == N - 1) return true;
 
 

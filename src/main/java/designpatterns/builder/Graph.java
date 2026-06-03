@@ -70,6 +70,7 @@ public class Graph {
                         int nr = row + d[0];
                         int nc = column + d[1];
 
+
                         if (nr >= 0 && nr < ROWS &&
                                 nc >= 0 && nc < COLS &&
                                 nodes[nr][nc] != null) {

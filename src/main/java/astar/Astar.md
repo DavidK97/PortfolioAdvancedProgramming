@@ -3,7 +3,7 @@
 ## AGENDA FOR FREMLÆGGELSEN
 * Hvad har vi haft om og hvad er det?
 * Regler for grafer og træer
-* Gennemgang af Astar visuelt
+* Forklaring af Astar visuelt
 * Dyk ned i koden
 --------------
 ![img.png](img.png)
